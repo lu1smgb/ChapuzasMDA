@@ -11,9 +11,9 @@ Universidad de Granada
 - **Subgrupo:** 1
 
 - **Integrantes**
-  - Juan Hernández Sánchez-Agesta
-  - Pablo García Guijosa
-  - Pablo del río López
-  - José Manuel nieto olmo
-  - Javier Mora Ortiz Villajos
-  - Luis Miguel Guirado Bautista
+  - [Juan Hernández Sánchez-Agesta](https://github.com/juanhdezz)
+  - [Pablo García Guijosa](https://github.com/pablogarciagui)
+  - [Pablo del Río López](https://github.com/pdrl02)
+  - [José Manuel Nieto Olmo](https://github.com/josemanuelnietoolmo)
+  - [Javier Mora Ortiz Villajos](https://github.com/javier-23)
+  - [Luis Miguel Guirado Bautista](https://github.com/lu1smgb)
