@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+
+  # Contenedor de base de datos
+  db:
+    image: mysql:8.4
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_USER_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      # La base de datos generada en el contenedor tambien se guarda en local
+      - ./db:/var/lib/mysql
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    # Protocolo para comprobar que se ha iniciado sin errores
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  # Contenedor de Django
+  backend:
+    build: ./backend
+    container_name: django_backend
+    command: python manage.py runserver ${DJANGO_HOST}:${DJANGO_PORT}
+    volumes:
+      - ./backend:/app # Lo que hay en la carpeta `backend pasa al contenedor`
+    ports:
+      - "${DJANGO_PORT}:${DJANGO_PORT}"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_USER_PASSWORD}
+      DB_HOST: db # Referencia al contenedor de la base de datos
+      DB_PORT: ${DB_PORT}
+      SECRET_KEY: ${DJANGO_SECRET_KEY}
+
+  # TODO
+  # frontend:
