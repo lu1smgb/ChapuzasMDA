@@ -1,6 +1,6 @@
 # ChapuzasMDA
 
-Practicas grupales de Metodologias de Desarrollo Agil
+Practicas grupales de Metodologias de Desarrollo Agil (UGR)
 
 Curso 2024/25
 
