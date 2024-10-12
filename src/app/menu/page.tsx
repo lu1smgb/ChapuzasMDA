@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Utensils, Plus, Minus } from 'lucide-react'
+import { Plus, Minus } from 'lucide-react'
 
 type Menu = {
   id: number
@@ -13,13 +13,36 @@ type Menu = {
 }
 
 const initialMenus: Menu[] = [
-  { id: 1, name: "Menú Basal", image: "/placeholder.svg?height=100&width=100", count: 0 },
-  { id: 2, name: "Menú Celiaco", image: "/placeholder.svg?height=100&width=100", count: 0 },
-  { id: 3, name: "Menú Sin Lactosa", image: "/placeholder.svg?height=100&width=100", count: 0 },
+  { id: 1, name: "Menú Basal", image: "", count: 0 },
+  { id: 2, name: "Menú Celiaco", image: "", count: 0 },
+  { id: 3, name: "Menú Sin Lactosa", image: "", count: 0 },
+]
+
+const searchTerms = [
+  "comida típica",
+  "sin gluten",
+  "sin lactosa"
 ]
 
 export default function MenuPage() {
   const [menus, setMenus] = useState<Menu[]>(initialMenus)
+
+  useEffect(() => {
+    const fetchPictograms = async () => {
+      const updatedMenus = await Promise.all(menus.map(async (menu, index) => {
+        const response = await fetch(`https://api.arasaac.org/api/pictograms/es/search/${encodeURIComponent(searchTerms[index])}`)
+        const data = await response.json()
+        const pictogram = data[0]
+        return {
+          ...menu,
+          image: pictogram ? `https://static.arasaac.org/pictograms/${pictogram._id}/${pictogram._id}_300.png` : "/placeholder.svg?height=300&width=300"
+        }
+      }))
+      setMenus(updatedMenus)
+    }
+
+    fetchPictograms()
+  }, [])
 
   const updateCount = (id: number, increment: boolean) => {
     setMenus(menus.map(menu => 
@@ -39,8 +62,8 @@ export default function MenuPage() {
             <CardContent className="flex flex-col items-center p-6">
               <img 
                 src={menu.image} 
-                alt={`Imagen de ${menu.name}`} 
-                className="w-32 h-32 object-cover mb-4 rounded-full border-4 border-pink-400"
+                alt={`Pictograma de ${menu.name}`} 
+                className="w-32 h-32 object-contain mb-4 rounded-full border-4 border-pink-400"
               />
               <p className="text-xl font-semibold mb-4 text-blue-600">Seleccionados: {menu.count}</p>
               <div className="flex space-x-4">
