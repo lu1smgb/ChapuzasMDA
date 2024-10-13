@@ -3,11 +3,10 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Clock } from 'lucide-react'
+import { ArrowLeft, Calendar, Clock } from 'lucide-react'
 import { supabase } from "@/lib/supabase";
 
 // Inicializa el cliente de Supabase
-//const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 type Activity = {
   id: number
@@ -75,7 +74,7 @@ export default function Agenda() {
             onClick={() => router.push('/calendario')}
             className="w-full h-64 flex flex-col items-center justify-center p-6 bg-green-400 hover:bg-green-500 text-white rounded-2xl"
           >
-            
+            <Calendar className="w-24 h-24 mb-4" />
             <h2 className="text-3xl font-bold">Calendario</h2>
           </Button>
         </Card>
