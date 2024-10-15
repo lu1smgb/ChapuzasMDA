@@ -8,7 +8,7 @@ import { ArrowLeft, Puzzle, Book, Music, PenTool, Brain } from 'lucide-react'
 type AppOrGame = {
   id: number;
   name: string;
-  icon: React.ReactNode;
+  //icon: React.ReactNode;
   emoji: string;
   url: string;
   color: string;
@@ -20,7 +20,7 @@ export default function Aplicaciones() {
     { 
       id: 1, 
       name: "Juegos de Puzzle", 
-      icon: <Puzzle className="w-12 h-12" />, 
+      //icon: <Puzzle className="w-12 h-12" />, 
       emoji: "🧩", 
       url: "https://www.cokitos.com/categoria/puzzles/", 
       color: "bg-blue-400" 
@@ -28,7 +28,7 @@ export default function Aplicaciones() {
     { 
       id: 2, 
       name: "Cuentos Interactivos", 
-      icon: <Book className="w-12 h-12" />, 
+      //icon: <Book className="w-12 h-12" />, 
       emoji: "📚", 
       url: "https://www.cuentosinteractivos.org/", 
       color: "bg-green-400" 
@@ -36,7 +36,7 @@ export default function Aplicaciones() {
     { 
       id: 3, 
       name: "Juegos Musicales", 
-      icon: <Music className="w-12 h-12" />, 
+      //icon: <Music className="w-12 h-12" />, 
       emoji: "🎵", 
       url: "https://www.cokitos.com/categoria/musica/", 
       color: "bg-yellow-400" 
@@ -44,7 +44,7 @@ export default function Aplicaciones() {
     { 
       id: 4, 
       name: "Dibujo y Colorear", 
-      icon: <PenTool className="w-12 h-12" />, 
+      //icon: <PenTool className="w-12 h-12" />, 
       emoji: "🎨", 
       url: "https://www.colorear-online.com/", 
       color: "bg-pink-400" 
@@ -52,7 +52,7 @@ export default function Aplicaciones() {
     { 
       id: 5, 
       name: "Juegos de Memoria", 
-      icon: <Brain className="w-12 h-12" />, 
+      //icon: <Brain className="w-12 h-12" />, 
       emoji: "🧠", 
       url: "https://www.cokitos.com/categoria/memoria/", 
       color: "bg-purple-400" 
@@ -73,9 +73,9 @@ export default function Aplicaciones() {
           <Card key={item.id} className={`${item.color} p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:scale-105`}>
             <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center text-center">
               <div className="text-6xl mb-4">{item.emoji}</div>
-              <div className="bg-white rounded-full p-4 mb-4">
+              {/* <div className="bg-white rounded-full p-4 mb-4">
                 {item.icon}
-              </div>
+              </div> */}
               <h2 className="text-2xl font-bold text-white mb-2">{item.name}</h2>
               <p className="text-white">Haz clic para jugar</p>
             </a>
