@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Car, ChevronLeft, ChevronRight } from 'lucide-react'
 import { supabase } from "@/lib/supabase";
 
 
@@ -42,77 +42,67 @@ export default function Calendario() {
     }
   }
 
-  const changeMonth = (increment: number) => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + increment, 1))
-  }
-
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-  }
-
-  const getMonthName = (date: Date) => {
-    return date.toLocaleString('default', { month: 'long' })
-  }
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4">
-      <Button 
+    <div className="min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4">  
+      <Button  // Botón para volver al menú de calendario y agenda
         onClick={() => router.push('/menu-calendario-agenda')} 
-        className="mb-4 bg-yellow-400 hover:bg-yellow-500 text-blue-800"
+        className="mb-10 bg-yellow-400 hover:bg-yellow-500 text-blue-800 text-lg py-3 px-6 w-full h-20 flex items-center justify-center"
       >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Volver a Menu de Calendario y Agenda
+        <ArrowLeft className="mr-1 h-10 w-10" /> ATRÁS
       </Button>
+      
       <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">Calendario de Actividades</h1>
-      <Card className="p-6 bg-white rounded-3xl shadow-lg max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-4">
-          <Button onClick={() => changeMonth(-1)} className="bg-blue-500 hover:bg-blue-600">
-            <ChevronLeft className="h-6 w-6" />
-          </Button>
-          <h2 className="text-5xl font-bold text-purple-600">
-            {getMonthName(currentDate).toUpperCase()}
-          </h2>
-          <Button onClick={() => changeMonth(1)} className="bg-blue-500 hover:bg-blue-600">
-            <ChevronRight className="h-6 w-6" />
-          </Button>
-        </div>
-        <div className="text-2xl font-bold text-center text-blue-600 mb-4">
-          {currentDate.getFullYear()}
-        </div>
-        <div className="grid grid-cols-7 gap-2">
-          {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(day => (
-            <div key={day} className="text-center font-bold text-lg text-purple-700">{day}</div>
-          ))}
-          {Array.from({ length: getDaysInMonth(currentDate) }).map((_, index) => {
-            const date = index + 1
-            const activitiesForDay = activities.filter(activity => 
-              new Date(activity.start_time).getDate() === date
-            )
-            return (
-              <Button
-                key={date}
-                className={`h-24 ${
-                  activitiesForDay.length > 0 
-                    ? 'bg-green-400 hover:bg-green-500 text-white' 
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                }`}
-                onClick={() => {
-                  // Aquí puedes agregar la lógica para mostrar las actividades del día
-                  console.log(`Actividades para el ${date}:`, activitiesForDay)
-                }}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="text-2xl font-bold">{date}</span>
-                  {activitiesForDay.length > 0 && (
-                    <span className="text-sm mt-1 font-semibold">
-                      {activitiesForDay.length} actividad{activitiesForDay.length !== 1 ? 'es' : ''}
-                    </span>
-                  )}
-                </div>
-              </Button>
-            )
-          })}
-        </div>
-      </Card>
+      
+      <div className="flex justify-between mt-8 h-full">
+        <Card className="p-6 bg-white rounded-3xl shadow-lg w-1/3 h-full mx-1">
+          <div className="flex flex-col items-center">
+            <div className="text-5xl font-bold text-purple-600">
+              {new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1).getDate()}
+            </div>
+            <div className="text-2xl font-semibold text-blue-600 mb-4">
+              {new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() - 1).toLocaleString('default', { weekday: 'long' })} - Ayer
+            </div>
+            <img src="/images/ayer.png" className="w-24 h-24 mb-4" />
+            <div className="flex-grow w-full mt-4">
+              {/* Aquí puedes agregar la lógica para mostrar las actividades de ayer */}
+            </div>
+          </div>
+        </Card>
+        <Card className="p-6 bg-white rounded-3xl shadow-lg w-1/3 h-full mx-1">
+          <div className="flex flex-col items-center">
+            <div className="text-5xl font-bold text-purple-600">
+              {currentDate.getDate()}
+            </div>
+            <div className="text-2xl font-semibold text-blue-600 mb-4">
+              {new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate()).toLocaleString('default', { weekday: 'long' })} - Hoy
+            </div>
+            <img src="/images/hoy.png" alt="Imagen de la fecha" className="w-24 h-24 mb-4" />
+            <div className="flex-grow w-full mt-4">
+              <div className="flex flex-col items-start">
+                <div className="text-lg font-semibold text-gray-800 mb-6">ACTIVIDAD 1: Pedir material</div>
+                <div className="text-lg font-semibold text-gray-800 mb-6">ACTIVIDAD 2: Hacer comandas</div>
+                <div className="text-lg font-semibold text-gray-800 mb-6">ACTIVIDAD 3: </div>
+                <div className="text-lg font-semibold text-gray-800 mb-5">ACTIVIDAD 4: </div>
+              </div>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-6 bg-white rounded-3xl shadow-lg w-1/3 h-full mx-1">
+          <div className="flex flex-col items-center">
+            <div className="text-5xl font-bold text-purple-600">
+              {new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1).getDate()}
+            </div>
+            <div className="text-2xl font-semibold text-blue-600 mb-4">
+          {new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate() + 1).toLocaleString('default', { weekday: 'long' })} - Mañana
+            </div>
+            <img src="/images/mañana.png" alt="Imagen de la fecha" className="w-24 h-24 mb-4" />
+            <div className="flex-grow w-full mt-4">
+              {/* Aquí puedes agregar la lógica para mostrar las actividades de mañana */}
+            </div>
+          </div>
+        </Card>
+      </div>
+
     </div>
   )
 }
