@@ -35,5 +35,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+<<<<<<< HEAD
 # Scripts
+=======
+# scripts
+>>>>>>> main
 *.sh
