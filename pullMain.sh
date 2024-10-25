@@ -6,4 +6,4 @@ git merge main
 # Resolver conflictos
 git add .
 git commit -m "Merge main->pablo"
-git push
+
