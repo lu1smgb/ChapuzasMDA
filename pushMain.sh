@@ -2,7 +2,7 @@
 
 # Verificar que se haya pasado un argumento
 if [ $# -ne 1 ]; then
-    echo "Uso: ./merge_script.sh <nombre-de-la-rama>"
+    echo "Uso: ./pushMain.sh <nombre-de-la-rama>"
     exit 1
 fi
 
