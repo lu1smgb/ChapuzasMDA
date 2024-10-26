@@ -1,8 +1,8 @@
 git checkout main
 git pull origin main
-git merge pablo
+git merge jose
 #Resolver conflictos
 git add .
-git commit -m "Merge pablo->main"
+git commit -m "Merge jose->main"
 git push origin main
-git checkout pablo
+git checkout jose
