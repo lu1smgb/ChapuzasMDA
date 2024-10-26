@@ -60,7 +60,7 @@ export default function GestionAlumnos() {
             </Link>
           ))}
         </div>
-        <Link href="/menu-administrador">
+        <Link href="/admin">
           <Button 
             variant="outline" 
             className="mt-8 w-full text-lg bg-gray-500 hover:bg-gray-600 text-white"

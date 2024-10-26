@@ -13,32 +13,51 @@ import {
 } from "@/components/ui/select"
 import { ArrowLeft } from "lucide-react"
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient('https://your-project.supabase.co', 'your-anon-key')
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function CrearAlumno() {
   const [nombre, setNombre] = useState('')
   const [tipoLogin, setTipoLogin] = useState('')
-  const [tipoLoginOptions, setTipoLoginOptions] = useState<string[]>([]) 
+  const [tipoLoginOptions, setTipoLoginOptions] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const router = useRouter()
+  const [successMessage, setSuccessMessage] = useState('') // State for success message
+  const [isLoadingOptions, setIsLoadingOptions] = useState(true)
 
   useEffect(() => {
-    // Cargar los valores permitidos de `tipo_login` desde la tabla de referencia `tipo_login_values`
     const fetchTipoLoginOptions = async () => {
+      setIsLoadingOptions(true)
+      setError('')
       try {
+        console.log('Fetching tipo_login options...')
         const { data, error } = await supabase
-          .from('tipo_login_valores') 
-          .select('valor') 
+          .from('TipoLogin')
+          .select('tipo_login')
 
         if (error) throw error
 
-        setTipoLoginOptions(data.map(item => item.valor)) 
+        console.log('Received data:', data)
+        if (!data || data.length === 0) {
+          throw new Error('No se encontraron opciones de tipo de login')
+        }
+
+        const options = data.map(item => item.tipo_login)
+        console.log('Processed options:', options)
+        setTipoLoginOptions(options)
+        
+        // Set the first option as default if available
+        if (options.length > 0) {
+          setTipoLogin(options[0])
+        }
       } catch (error) {
         console.error('Error fetching tipo_login options:', error)
+        setError('Error al cargar las opciones de tipo de login. Por favor, recargue la página.')
+      } finally {
+        setIsLoadingOptions(false)
       }
     }
 
@@ -49,6 +68,7 @@ export default function CrearAlumno() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
+    setSuccessMessage('') // Reset success message before submission
 
     if (!tipoLogin || !nombre) {
       setError('Debe llenar todos los campos y seleccionar un valor permitido para el campo Tipo de Login.')
@@ -57,12 +77,12 @@ export default function CrearAlumno() {
     }
 
     try {
-      // Insertar un nuevo alumno en la tabla `Alumno`
+      console.log('Submitting form with:', { nombre, tipoLogin })
       const { data, error } = await supabase
-        .from('Alumno') // Asegúrate de que esta tabla existe en tu base de datos
+        .from('Alumno')
         .insert([
           { 
-            nombre_apellido: nombre, // Revisa si este campo es correcto en tu tabla
+            nombre_apellido: nombre,
             tipo_login: tipoLogin,
           }
         ])
@@ -70,10 +90,14 @@ export default function CrearAlumno() {
       if (error) throw error
 
       console.log('Alumno creado:', data)
-      router.push('/admin/gestionarAlumnos')
+      setSuccessMessage('Alumno creado con éxito') // Set success message
+
+      // Clear the form fields
+      setNombre('')
+      setTipoLogin('')
     } catch (error) {
-      setError('Error al crear el alumno. Por favor, intente de nuevo.')
       console.error('Error creating student:', error)
+      setError('Error al crear el alumno. Por favor, intente de nuevo.')
     } finally {
       setIsLoading(false)
     }
@@ -84,14 +108,15 @@ export default function CrearAlumno() {
       <main className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full md:max-w-2xl">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900">Crear Alumno</h1>
         <nav className="mb-8">
-          <Link href="/admin/dashboard" passHref>
+          <Link href="/admin/gestionarAlumno" passHref>
             <Button variant="outline" className="w-full text-base md:text-lg bg-yellow-400 hover:bg-yellow-500" aria-label="Volver al dashboard">
               <ArrowLeft className="mr-2 h-4 w-4 md:h-5 md:w-5" aria-hidden="true" />
               Atrás
             </Button>
           </Link>
         </nav>
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && <p className="text-red-500 text-center mb-4" role="alert">{error}</p>}
+        {successMessage && <p className="text-green-500 text-center mb-4" role="status">{successMessage}</p>} {/* Success message */}
         <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
           <div className="space-y-2 md:space-y-3">
             <Label htmlFor="nombre" className="text-base md:text-lg font-medium text-gray-900">
@@ -104,6 +129,7 @@ export default function CrearAlumno() {
               className="text-base md:text-lg"
               placeholder="Ingrese el nombre del alumno"
               required
+              aria-required="true"
             />
           </div>
           <div className="space-y-2 md:space-y-3">
@@ -113,10 +139,10 @@ export default function CrearAlumno() {
             <Select 
               value={tipoLogin} 
               onValueChange={setTipoLogin}
-              aria-required="true"
+              disabled={isLoadingOptions}
             >
               <SelectTrigger id="tipoLogin" className="text-base md:text-lg">
-                <SelectValue placeholder="Seleccione un valor" />
+                <SelectValue placeholder={isLoadingOptions ? "Cargando opciones..." : "Seleccione un valor"} />
               </SelectTrigger>
               <SelectContent>
                 {tipoLoginOptions.map((tipo) => (
@@ -126,12 +152,13 @@ export default function CrearAlumno() {
                 ))}
               </SelectContent>
             </Select>
+            {isLoadingOptions && <p className="text-sm text-gray-500">Cargando opciones de tipo de login...</p>}
           </div>
           <Button 
             type="submit" 
             className="w-full text-base md:text-lg bg-blue-600 hover:bg-blue-700 text-white"
             aria-label="Crear alumno"
-            disabled={isLoading}
+            disabled={isLoading || isLoadingOptions}
           >
             {isLoading ? 'Creando...' : 'Crear Alumno'}
           </Button>
