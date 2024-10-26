@@ -14,6 +14,7 @@ git checkout main
 
 # Hacer pull de la rama principal
 git pull origin main
+<<<<<<< HEAD
 
 # Hacer merge de la rama especificada en la rama principal
 git merge "$branch_name"
@@ -36,3 +37,11 @@ git push origin main
 git checkout "$branch_name"
 
 echo "Merge completado y vuelto a la rama $branch_name."
+=======
+git merge jose
+#Resolver conflictos
+git add .
+git commit -m "Merge jose->main"
+git push origin main
+git checkout jose
+>>>>>>> jose

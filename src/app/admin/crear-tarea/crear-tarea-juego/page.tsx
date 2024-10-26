@@ -95,7 +95,7 @@ export default function CrearTareaJuego() {
       <main className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full md:max-w-2xl">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900">Crear Tarea de Juego</h1>
         <nav className="mb-8">
-          <Link href="/admin/dashboard" passHref>
+          <Link href="/admin/crear-tarea" passHref>
             <Button variant="outline" className="w-full text-base md:text-lg bg-yellow-400 hover:bg-yellow-500" aria-label="Volver al dashboard">
               <ArrowLeft className="mr-2 h-4 w-4 md:h-5 md:w-5" aria-hidden="true" />
               Volver al Dashboard

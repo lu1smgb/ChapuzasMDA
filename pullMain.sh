@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/bin/bash
 
 # Verificar que se haya pasado un argumento
@@ -13,15 +14,22 @@ branch_name=$1
 git checkout "$branch_name"
 
 # Cambiar a la rama principal
+=======
+git checkout jose
+>>>>>>> jose
 git checkout main
 
 # Hacer pull de la rama principal
 git pull origin main
+<<<<<<< HEAD
 
 # Regresar a la rama especificada
 git checkout "$branch_name"
 
 # Hacer merge de la rama principal
+=======
+git checkout jose
+>>>>>>> jose
 git merge main
 
 # Instrucciones para resolver conflictos si los hay
