@@ -43,7 +43,7 @@ export default function GestionAlumnos() {
               <Card 
                 className={`transition-all duration-300 ease-in-out transform hover:scale-105 ${
                   hoveredCard === item.title ? 'shadow-lg' : 'shadow'
-                } ${item.color} text-white`}
+                } ${item.color} text-white min-h-full flex flex-col`}
                 onMouseEnter={() => setHoveredCard(item.title)}
                 onMouseLeave={() => setHoveredCard(null)}
               >
