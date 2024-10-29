@@ -37,11 +37,4 @@ git push origin main
 git checkout "$branch_name"
 
 echo "Merge completado y vuelto a la rama $branch_name."
-=======
-git merge jose
-#Resolver conflictos
-git add .
-git commit -m "Merge jose->main"
-git push origin main
-git checkout jose
->>>>>>> jose
+
