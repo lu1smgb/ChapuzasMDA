@@ -8,10 +8,10 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft } from "lucide-react"
 import Link from 'next/link'
 
-
 export default function CrearProfesor() {
   const [nombre, setNombre] = useState('')
   const [aula, setAula] = useState('')
+  const [contrasena, setContrasena] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('') 
@@ -22,7 +22,7 @@ export default function CrearProfesor() {
     setError('')
     setSuccessMessage('')
 
-    if (!nombre || !aula) {
+    if (!nombre || !aula || !contrasena) {
       setError('Debe llenar todos los campos.')
       setIsLoading(false)
       return
@@ -35,6 +35,7 @@ export default function CrearProfesor() {
           { 
             nombre_apellido: nombre,
             aula: aula,
+            contraseña: contrasena, // Añadimos el campo de credenciales
           }
         ])
 
@@ -43,6 +44,7 @@ export default function CrearProfesor() {
       setSuccessMessage('Profesor creado con éxito')
       setNombre('')
       setAula('')
+      setContrasena('')
     } catch (error) {
       console.error('Error creating professor:', error)
       setError('Error al crear el profesor. Por favor, intente de nuevo.')
@@ -90,6 +92,20 @@ export default function CrearProfesor() {
               onChange={(e) => setAula(e.target.value)}
               className="text-base md:text-lg"
               placeholder="Ingrese el aula"
+              required
+              aria-required="true"
+            />
+          </div>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="contrasena" className="text-base md:text-lg font-medium text-gray-900">
+              Contraseña o PIN
+            </Label>
+            <Input
+              id="contrasena"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+              className="text-base md:text-lg"
+              placeholder="Ingrese la contraseña o PIN"
               required
               aria-required="true"
             />
