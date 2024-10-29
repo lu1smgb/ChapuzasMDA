@@ -40,7 +40,7 @@ export default function HomePage() {
   }, [router])
 
   const navigateToAgenda = () => {
-    router.push('/agenda')
+    router.push('/menu-calendario-agenda')
   }
 
   const navigateToGames = () => {

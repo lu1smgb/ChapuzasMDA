@@ -5,10 +5,10 @@ export default async function Insercion() {
     const { data, error } = await supabase
         .from("Juego")
         .insert({
-            name: "VScode otroo",
-            site_url: "https://www.vscodeotroo.com",
-            img_name: "vscodeee.png",
-            bg_color: "bg-browwwn-400",
+            name: "VScode otrooPortatil",
+            site_url: "https://www.vscodeotrooportatil.com",
+            img_name: "vscodeeeport.png",
+            bg_color: "bg-browwwnport-400",
         })
         .select();
 
