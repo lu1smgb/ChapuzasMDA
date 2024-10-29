@@ -1,8 +1,7 @@
-import { createClient } from "../server";
+import { client } from "../client";
 
 export async function getGameList() {
 
-    const client = createClient();
     const { error, data } = await client.from('Juego').select('*');
 
     if (error) {
