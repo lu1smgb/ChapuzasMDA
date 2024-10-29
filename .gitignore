@@ -34,3 +34,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Scripts para trabajar en el repo
+pullMain.sh
+pushMain.sh
