@@ -14,8 +14,6 @@ import { ArrowLeft } from "lucide-react"
 import Link from 'next/link'
 import { supabase } from "@/lib/supabase"
 
-
-
 interface Profesor {
   id: number;
   nombre_apellido: string;
@@ -62,6 +60,11 @@ export default function EliminarProfesor() {
     if (!selectedProfesorId) {
       setError('Debe seleccionar un profesor para eliminar.')
       return
+    }
+
+    const confirmDelete = window.confirm("¿Está seguro de que desea eliminar este profesor? Esta acción no se puede deshacer.");
+    if (!confirmDelete) {
+      return;
     }
 
     setIsLoading(true)
@@ -115,11 +118,17 @@ export default function EliminarProfesor() {
                 <SelectValue placeholder="Seleccione un profesor para eliminar" />
               </SelectTrigger>
               <SelectContent>
-                {profesores.map((profesor) => (
-                  <SelectItem key={profesor.id} value={profesor.id.toString()} className="text-base md:text-lg">
-                    {profesor.nombre_apellido}
+                {profesores.length === 0 ? (
+                  <SelectItem value="no-profesores" disabled className="text-base md:text-lg">
+                    No hay profesores disponibles
                   </SelectItem>
-                ))}
+                ) : (
+                  profesores.map((profesor) => (
+                    <SelectItem key={profesor.id} value={profesor.id.toString()} className="text-base md:text-lg">
+                      {profesor.nombre_apellido}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -136,3 +145,4 @@ export default function EliminarProfesor() {
     </div>
   )
 }
+

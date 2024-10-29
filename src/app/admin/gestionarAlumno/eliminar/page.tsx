@@ -1,22 +1,21 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
+import { useState, useEffect } from 'react';
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { ArrowLeft } from "lucide-react"
-import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+} from "@/components/ui/select";
+import { ArrowLeft } from "lucide-react";
+import Link from 'next/link';
+import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface Alumno {
@@ -25,70 +24,69 @@ interface Alumno {
 }
 
 export default function EliminarAlumno() {
-  const [alumnos, setAlumnos] = useState<Alumno[]>([])
-  const [selectedAlumnoId, setSelectedAlumnoId] = useState<string>('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
+  const [alumnos, setAlumnos] = useState<Alumno[]>([]);
+  const [selectedAlumnoId, setSelectedAlumnoId] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
     const fetchAlumnos = async () => {
-      setIsLoading(true)
-      setError('')
+      setIsLoading(true);
+      setError('');
       try {
         const { data, error } = await supabase
           .from('Alumno')
           .select('id, nombre_apellido')
-          .order('nombre_apellido', { ascending: true })
+          .order('nombre_apellido', { ascending: true });
 
-        if (error) throw error
-
-        setAlumnos(data || [])
+        if (error) throw error;
+        setAlumnos(data || []);
       } catch (error) {
-        console.error('Error fetching alumnos:', error)
-        setError('Error al cargar los alumnos. Por favor, recargue la página.')
+        console.error('Error fetching alumnos:', error);
+        setError('Error al cargar los alumnos. Por favor, recargue la página.');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchAlumnos()
-  }, [])
+    fetchAlumnos();
+  }, []);
 
   const handleAlumnoChange = (alumnoId: string) => {
-    setSelectedAlumnoId(alumnoId)
-    setSuccessMessage('')
-    setError('')
-  }
+    setSelectedAlumnoId(alumnoId);
+    setSuccessMessage('');
+    setError('');
+  };
 
   const handleDelete = async () => {
     if (!selectedAlumnoId) {
-      setError('Debe seleccionar un alumno para eliminar.')
-      return
+      setError('Debe seleccionar un alumno para eliminar.');
+      return;
     }
 
-    setIsLoading(true)
-    setError('')
-    setSuccessMessage('')
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
 
     try {
       const { error } = await supabase
         .from('Alumno')
         .delete()
-        .eq('id', selectedAlumnoId)
+        .eq('id', selectedAlumnoId);
 
-      if (error) throw error
+      if (error) throw error;
 
-      setAlumnos(alumnos.filter(alumno => alumno.id.toString() !== selectedAlumnoId))
-      setSuccessMessage('Alumno eliminado con éxito')
-      setSelectedAlumnoId('')
+      setAlumnos(alumnos.filter(alumno => alumno.id.toString() !== selectedAlumnoId));
+      setSuccessMessage('Alumno eliminado con éxito');
+      setSelectedAlumnoId('');
     } catch (error) {
-      console.error('Error deleting student:', error)
-      setError('Error al eliminar el alumno. Por favor, intente de nuevo.')
+      console.error('Error deleting student:', error);
+      setError('Error al eliminar el alumno. Por favor, intente de nuevo.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-blue-100 md:via-purple-100 md:to-pink-100 flex items-center justify-center p-4">
@@ -137,5 +135,5 @@ export default function EliminarAlumno() {
         </div>
       </main>
     </div>
-  )
+  );
 }

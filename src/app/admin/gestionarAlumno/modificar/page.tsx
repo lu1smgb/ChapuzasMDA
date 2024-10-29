@@ -24,6 +24,7 @@ interface Alumno {
   id: number;
   nombre_apellido: string;
   tipo_login: string;
+  credenciales: string;
 }
 
 export default function EditarAlumno() {
@@ -32,6 +33,7 @@ export default function EditarAlumno() {
   const [tipoLoginActual, setTipoLoginActual] = useState('')
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoTipoLogin, setNuevoTipoLogin] = useState('')
+  const [nuevaContrasena, setNuevaContrasena] = useState('')
   const [tipoLoginOptions, setTipoLoginOptions] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -45,7 +47,7 @@ export default function EditarAlumno() {
         // Fetch alumnos
         const { data: alumnosData, error: alumnosError } = await supabase
           .from('Alumno')
-          .select('id, nombre_apellido, tipo_login')
+          .select('id, nombre_apellido, tipo_login, credenciales')
 
         if (alumnosError) throw alumnosError
 
@@ -83,6 +85,7 @@ export default function EditarAlumno() {
       setTipoLoginActual(alumno.tipo_login)
       setNuevoTipoLogin(alumno.tipo_login)
     }
+    setNuevaContrasena('')  // Reiniciar la contraseña cuando se selecciona un nuevo alumno
     setSuccessMessage('')
   }
 
@@ -92,17 +95,16 @@ export default function EditarAlumno() {
       setError('Debe seleccionar un alumno.')
       return
     }
-
-    // Nueva validación para evitar nombres vacíos
+  
     if (nuevoNombre.trim() === '') {
       setError('El nombre no puede ser una cadena vacía.')
       return
     }
-
+  
     setIsLoading(true)
     setError('')
     setSuccessMessage('')
-
+  
     const updates: Partial<Alumno> = {}
     if (nuevoNombre !== selectedAlumno.nombre_apellido) {
       updates.nombre_apellido = nuevoNombre
@@ -110,22 +112,25 @@ export default function EditarAlumno() {
     if (nuevoTipoLogin !== selectedAlumno.tipo_login) {
       updates.tipo_login = nuevoTipoLogin
     }
-
+    if (nuevaContrasena) {
+      updates.credenciales = nuevaContrasena  // Actualizamos credenciales en vez de contrasena
+    }
+  
     if (Object.keys(updates).length === 0) {
       setError('No se han realizado cambios.')
       setIsLoading(false)
       return
     }
-
+  
     try {
       const { data, error } = await supabase
         .from('Alumno')
         .update(updates)
         .eq('id', selectedAlumno.id)
         .select()
-
+  
       if (error) throw error
-
+  
       if (data && data.length > 0) {
         const updatedAlumno = data[0] as Alumno
         setSelectedAlumno(updatedAlumno)
@@ -133,9 +138,7 @@ export default function EditarAlumno() {
         setTipoLoginActual(updatedAlumno.tipo_login)
         setNuevoTipoLogin(updatedAlumno.tipo_login)
         
-        // Update the alumnos array with the new data
         setAlumnos(alumnos.map(a => a.id === updatedAlumno.id ? updatedAlumno : a))
-        
         setSuccessMessage('Alumno actualizado con éxito')
       }
     } catch (error) {
@@ -145,6 +148,7 @@ export default function EditarAlumno() {
       setIsLoading(false)
     }
   }
+  
 
   return (
     <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-blue-100 md:via-purple-100 md:to-pink-100 flex items-center justify-center p-4">
@@ -226,16 +230,30 @@ export default function EditarAlumno() {
               </SelectContent>
             </Select>
           </div>
-          <Button 
-            type="submit" 
-            className="w-full text-base md:text-lg bg-blue-600 hover:bg-blue-700 text-white"
-            aria-label="Actualizar alumno"
-            disabled={isLoading || !selectedAlumno}
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="nuevaContrasena" className="text-base md:text-lg font-medium text-gray-900">
+              Nuevo Credencial
+            </Label>
+            <Input
+              id="nuevaContrasena"
+              value={nuevaContrasena}
+              onChange={(e) => setNuevaContrasena(e.target.value)}
+              className="text-base md:text-lg"
+              placeholder="Ingrese el nuevo credencial (opcional)"
+            />
+          </div>
+          <Button
+            type="submit"
+            //variant="primary"
+            className="w-full bg-green-500 hover:bg-green-600 text-base md:text-lg"
+            disabled={isLoading}
+            aria-label="Guardar cambios"
           >
-            {isLoading ? 'Actualizando...' : 'Actualizar Alumno'}
+            {isLoading ? 'Guardando...' : 'Guardar Cambios'}
           </Button>
         </form>
       </main>
     </div>
   )
 }
+
