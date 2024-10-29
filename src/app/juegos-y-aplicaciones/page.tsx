@@ -5,14 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
-
-interface Juego {
-  id: number;
-  name: string;
-  site_url: string;
-  img_name: string;
-  bg_color: string;
-}
+import { Juego } from '@/lib/types'
 
 export default function Aplicaciones() {
   const router = useRouter();
