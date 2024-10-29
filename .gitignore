@@ -35,6 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Scripts para trabajar en el repo
-pullMain.sh
-pushMain.sh
+# anima
+.anima
