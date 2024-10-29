@@ -37,3 +37,7 @@ next-env.d.ts
 
 # Scripts2
 *.sh
+
+.anima
+.env
+.vscode
