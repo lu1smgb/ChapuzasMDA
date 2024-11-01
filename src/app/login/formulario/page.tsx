@@ -92,7 +92,7 @@ export default function AdminLoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Link href="./admin" passHref>
+          <Link href="/login/formulario/registro" passHref>
             <Button variant="outline" className="w-full">
               Registrarse como Administrador
             </Button>

@@ -11,7 +11,7 @@ import { ArrowLeft, Loader2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
 //Código de verificación para que solo pueda registrarse el administrador y no otros.
-const verificationCode = '1111';
+const verificationCode = '1234';
 
 export default function AdminRegistrationPage() {
   const [formData, setFormData] = useState({
