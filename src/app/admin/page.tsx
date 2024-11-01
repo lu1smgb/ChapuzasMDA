@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils } from "lucide-react"
+import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils, Paperclip } from "lucide-react"
 import Link from 'next/link'
 
 // Función que obtiene el nombre del administrador
@@ -70,6 +70,13 @@ export default function AdminDashboard() {
       icon: Utensils, 
       link: '/admin/gestionarMenu',
       color: 'bg-teal-500 hover:bg-teal-600'
+    },
+    { 
+      title: 'Gestionar Material', 
+      description: 'Añadir, modificar y eliminar material', 
+      icon: Paperclip, 
+      link: '/admin/gestionarMaterial',
+      color: 'bg-cyan-500 hover:bg-cyan-600'
     },
   ]
 
