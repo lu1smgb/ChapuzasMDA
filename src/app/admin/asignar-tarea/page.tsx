@@ -19,7 +19,7 @@ import { useRouter } from 'next/navigation'
 type Task = {
   id: string;
   nombre_tarea: string;
-  tipo_tarea: string;
+  tipo_tarea: string; 
   descripcion: string;
 }
 
@@ -166,7 +166,7 @@ export default function AsignarTareas() {
                     <div>
                       <strong>{task.nombre_tarea}</strong>
                       <p>Tipo: {task.tipo_tarea}</p>
-                      <p>Descripción: {task.descripcion.slice(0, 50)}{task.descripcion.length > 50 ? '...' : ''}</p>
+                      <p>Descripción: {task.descripcion}</p>
                     </div>
                   </SelectItem>
                 ))}

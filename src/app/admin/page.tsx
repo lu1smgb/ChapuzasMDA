@@ -6,10 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils } from "lucide-react"
 import Link from 'next/link'
 
-// Simulación de una función que obtiene el nombre del administrador
+// Función que obtiene el nombre del administrador
 const getAdminName = () => {
-  // Aquí podrías hacer una llamada a una API o obtener el nombre desde un contexto
-  return 'Javier';
+  return localStorage.getItem('adminName') || '';
 };
 
 export default function AdminDashboard() {
@@ -109,12 +108,13 @@ export default function AdminDashboard() {
             ))}
           </div>
           <Button 
-            variant="outline" 
-            className="mt-8 w-full text-lg bg-red-500 hover:bg-red-600 text-white"
-            aria-label="Cerrar sesión"
+          variant="outline" 
+          className="mt-8 w-full text-lg bg-red-500 hover:bg-red-600 text-white"
+          aria-label="Cerrar sesión"
+          onClick={() => window.location.href = '/login'}
           >
-            <UserMinus className="mr-2 h-5 w-5" aria-hidden="true" />
-            Cerrar Sesión
+          <UserMinus className="mr-2 h-5 w-5" aria-hidden="true" />
+          Cerrar Sesión
           </Button>
         </div>
       </main>

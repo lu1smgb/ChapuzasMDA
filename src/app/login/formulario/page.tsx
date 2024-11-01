@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { ArrowLeft, Loader2 } from "lucide-react"
 
 export default function AdminLoginPage() {
-  const [username, setUsername] = useState('')
+  const [fullName, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -22,16 +22,17 @@ export default function AdminLoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/admin-login', {
+      const response = await fetch('/api/login', { // Llamar a la ruta de login
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ fullName, password }),
       })
 
       const data = await response.json()
 
-      if (data.success) {
-        router.push('/admin-dashboard')
+      if (data.success){
+        localStorage.setItem('adminName', fullName);  // Guardar el nombre del administrador en el localStorage
+        router.push('/admin') // Redirigir al dashboard del administrador
       } else {
         setError('Credenciales incorrectas. Por favor, inténtelo de nuevo.')
       }
@@ -47,17 +48,17 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión</CardTitle>
-          <CardDescription className="text-center">Ingrese sus credenciales para acceder al menú de administración</CardDescription>
+          <CardDescription className="text-center">Ingrese sus credenciales para acceder al panel de administración</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Nombre de usuario</Label>
+              <Label htmlFor="fullName">Nombre y apellidos</Label>
               <Input
-                id="username"
+                id="fullName"
                 type="text"
-                placeholder="Ingrese su nombre de usuario"
-                value={username}
+                placeholder="Ingrese su nombre y apellidos"
+                value={fullName}
                 onChange={(e) => setUsername(e.target.value)}
                 required
               />
@@ -87,7 +88,7 @@ export default function AdminLoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Link href="./formulario/registro" passHref>
+          <Link href="./admin" passHref>
             <Button variant="outline" className="w-full">
               Registrarse como Administrador
             </Button>
