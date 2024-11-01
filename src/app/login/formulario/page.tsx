@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Loader2 } from "lucide-react"
+import { supabase } from '@/lib/supabase'
 
 export default function AdminLoginPage() {
   const [fullName, setUsername] = useState('')
@@ -22,25 +23,36 @@ export default function AdminLoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await fetch('/api/login', { // Llamar a la ruta de login
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, password }),
-      })
+      const { data: adminData, error: adminError } = await supabase
+      .from('Administrador')
+      .select('nombre_apellidos , contraseña')
+      .eq('nombre_apellidos', fullName)
+      .eq('contraseña', password)
+      .single();
 
-      const data = await response.json()
-
-      if (data.success){
-        localStorage.setItem('userName', fullName);  // Guardar el nombre del administrador/profesor en el localStorage
-        if (data.role === 'Administrador') {
-          router.push('/admin'); // Redirigir al dashboard del administrador
-        } else if (data.role === 'Profesor') {
-          router.push('/profesor'); // Redirigir al menú del profesor
-        }
-      } else {
+      let professorData = null;
+      if (adminError || !adminData) {
+        const { data, error } = await supabase
+          .from('Profesor')
+          .select('nombre_apellido , contraseña')
+          .eq('nombre_apellido', fullName)
+          .eq('contraseña', password)
+          .single();
+        professorData = data;
+      }
+    
+      if (adminData) {
+        localStorage.setItem('userName', fullName);  // Guardar el nombre del administrador en el localStorage
+        router.push('/admin'); // Redirigir al dashboard del administrador
+      } 
+      else if (professorData) {
+        localStorage.setItem('userName', fullName);  // Guardar el nombre del profesor en el localStorage
+        router.push('/profesor'); // Redirigir al menú del profesor
+      }
+      else {
         setError('Credenciales incorrectas. Por favor, inténtelo de nuevo.')
       }
-    } catch (err) {
+    } catch (error) {
       setError('Ocurrió un error al iniciar sesión. Por favor, inténtelo de nuevo más tarde.')
     } finally {
       setIsLoading(false)
