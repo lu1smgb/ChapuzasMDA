@@ -83,7 +83,7 @@ export default function AdminDashboard() {
       </div>
       <main className="flex-grow flex flex-col items-center justify-center">
         <div className="bg-white/80 backdrop-blur-md rounded-lg shadow-lg p-6 w-full max-w-5xl">
-          <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">Menú</h1>
+          <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">Panel de Administración</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {menuItems.map((item, index) => (
               <Link href={item.link} key={index} className="block">
