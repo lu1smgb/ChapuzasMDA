@@ -31,8 +31,12 @@ export default function AdminLoginPage() {
       const data = await response.json()
 
       if (data.success){
-        localStorage.setItem('adminName', fullName);  // Guardar el nombre del administrador en el localStorage
-        router.push('/admin') // Redirigir al dashboard del administrador
+        localStorage.setItem('userName', fullName);  // Guardar el nombre del administrador/profesor en el localStorage
+        if (data.role === 'Administrador') {
+          router.push('/admin'); // Redirigir al dashboard del administrador
+        } else if (data.role === 'Profesor') {
+          router.push('/profesor'); // Redirigir al menú del profesor
+        }
       } else {
         setError('Credenciales incorrectas. Por favor, inténtelo de nuevo.')
       }

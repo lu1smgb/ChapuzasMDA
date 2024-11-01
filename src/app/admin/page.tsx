@@ -8,7 +8,7 @@ import Link from 'next/link'
 
 // Función que obtiene el nombre del administrador
 const getAdminName = () => {
-  return localStorage.getItem('adminName') || '';
+  return localStorage.getItem('userName') || '';
 };
 
 export default function AdminDashboard() {
