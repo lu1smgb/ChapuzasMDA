@@ -16,7 +16,7 @@ export default function LoginPin() {
   const router = useRouter()
 
   useEffect(() => {
-    const alumnoId = localStorage.getItem('alumnoId')
+    const alumnoId = localStorage.getItem('alumnoId') 
     console.log('alumnoId en localStorage:', alumnoId)
   
     if (alumnoId) {
@@ -77,6 +77,9 @@ export default function LoginPin() {
 
       if (data) {
         router.push('/home')
+        localStorage.setItem('userId', alumno.id) // Guardar el identificador del alumno en el localStorage
+        localStorage.setItem('nombreUsuario', alumno.nombre_apellido) // Guardar el nombre del alumno en el localStorage
+        console.log("userId en localStorage después del login:", localStorage.getItem('userId'));
       } else {
         setError('PIN incorrecto')
       }

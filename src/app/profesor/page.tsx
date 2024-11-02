@@ -7,7 +7,7 @@ import { PartyPopper } from "lucide-react"
 // Function to get the teacher's name
 const getTeacherName = () => {
   // In a real application, this would likely come from an authentication context or API call
-  return localStorage.getItem('userName') || 'Profesor';
+  return localStorage.getItem('profName') || 'Profesor';
 };
 
 export default function TeacherDashboard() {

@@ -83,6 +83,8 @@ export default function LoginImagen() {
 
     if (selectedImage === alumno.credenciales) {
       router.push('/home')
+      localStorage.setItem('userId', alumno.id)
+      localStorage.setItem('nombreUsuario', alumno.nombre_apellido)
     } else {
       setError('Imagen incorrecta. Inténtalo de nuevo.')
       setSelectedImage(null)

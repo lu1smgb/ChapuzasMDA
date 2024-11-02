@@ -71,6 +71,8 @@ export default function LoginContrasena() {
 
       if (data) {
         router.push('/home')
+        localStorage.setItem('userId', alumno.id)
+        localStorage.setItem('nombreUsuario', alumno.nombre_apellido) // Guardar el nombre del alumno en el localStorage
       } else {
         setError('Contraseña incorrecta')
       }

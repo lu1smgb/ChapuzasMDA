@@ -42,11 +42,11 @@ export default function AdminLoginPage() {
       }
     
       if (adminData) {
-        localStorage.setItem('userName', fullName);  // Guardar el nombre del administrador en el localStorage
+        localStorage.setItem('adminName', fullName);  // Guardar el nombre del administrador en el localStorage
         router.push('/admin'); // Redirigir al dashboard del administrador
       } 
       else if (professorData) {
-        localStorage.setItem('userName', fullName);  // Guardar el nombre del profesor en el localStorage
+        localStorage.setItem('profName', fullName);  // Guardar el nombre del profesor en el localStorage
         router.push('/profesor'); // Redirigir al menú del profesor
       }
       else {
