@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from 'next/link'
 import { createClient } from '@supabase/supabase-js'
 
@@ -22,10 +22,12 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export default function CrearAlumno() {
   const [nombre, setNombre] = useState('')
   const [tipoLogin, setTipoLogin] = useState('')
+  const [password, setPassword] = useState('') // New state for password
+  const [showPassword, setShowPassword] = useState(false) // State to toggle password visibility
   const [tipoLoginOptions, setTipoLoginOptions] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [successMessage, setSuccessMessage] = useState('') // State for success message
+  const [successMessage, setSuccessMessage] = useState('')
   const [isLoadingOptions, setIsLoadingOptions] = useState(true)
 
   useEffect(() => {
@@ -68,39 +70,45 @@ export default function CrearAlumno() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-    setSuccessMessage('') // Reset success message before submission
+    setSuccessMessage('')
 
-    if (!tipoLogin || !nombre) {
+    if (!tipoLogin || !nombre || !password) {
       setError('Debe llenar todos los campos y seleccionar un valor permitido para el campo Tipo de Login.')
       setIsLoading(false)
       return
     }
 
     try {
-      console.log('Submitting form with:', { nombre, tipoLogin })
+      console.log('Submitting form with:', { nombre, tipoLogin, password })
       const { data, error } = await supabase
         .from('Alumno')
         .insert([
           { 
             nombre_apellido: nombre,
             tipo_login: tipoLogin,
+            credenciales: password, 
           }
         ])
 
       if (error) throw error
 
       console.log('Alumno creado:', data)
-      setSuccessMessage('Alumno creado con éxito') // Set success message
+      setSuccessMessage('Alumno creado con éxito')
 
       // Clear the form fields
       setNombre('')
       setTipoLogin('')
+      setPassword('')
     } catch (error) {
       console.error('Error creating student:', error)
       setError('Error al crear el alumno. Por favor, intente de nuevo.')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
   }
 
   return (
@@ -116,7 +124,7 @@ export default function CrearAlumno() {
           </Link>
         </nav>
         {error && <p className="text-red-500 text-center mb-4" role="alert">{error}</p>}
-        {successMessage && <p className="text-green-500 text-center mb-4" role="status">{successMessage}</p>} {/* Success message */}
+        {successMessage && <p className="text-green-500 text-center mb-4" role="status">{successMessage}</p>}
         <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
           <div className="space-y-2 md:space-y-3">
             <Label htmlFor="nombre" className="text-base md:text-lg font-medium text-gray-900">
@@ -153,6 +161,33 @@ export default function CrearAlumno() {
               </SelectContent>
             </Select>
             {isLoadingOptions && <p className="text-sm text-gray-500">Cargando opciones de tipo de login...</p>}
+          </div>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="password" className="text-base md:text-lg font-medium text-gray-900">
+              Contraseña
+            </Label>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="text-base md:text-lg pr-10"
+                placeholder="Ingrese la contraseña"
+                required
+                aria-required="true"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-0 top-0 h-full px-3"
+                onClick={togglePasswordVisibility}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
           <Button 
             type="submit" 

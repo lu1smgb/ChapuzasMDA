@@ -4,11 +4,15 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Gamepad2 } from 'lucide-react'
 
+const getUserName = () => {
+  return localStorage.getItem('nombreUsuario') || '';
+};
+
 export default function HomePage() {
   const router = useRouter()
   const [currentDateTime, setCurrentDateTime] = useState('')
   const [username, setUsername] = useState('')
-
+  
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date()
@@ -24,17 +28,9 @@ export default function HomePage() {
     updateDateTime()
     const timer = setInterval(updateDateTime, 60000) // Update every minute
 
-    // Fetch user data
-    const fetchUserData = async () => {
-      const response = await fetch('/api/user')
-      const data = await response.json()
-      if (data.user) {
-        setUsername(data.user.username)
-      } else {
-        router.push('/login')
-      }
-    }
-    fetchUserData()
+    // Obtener el nombre del usuario
+    const name = getUserName()
+    setUsername(name)
 
     return () => clearInterval(timer)
   }, [router])

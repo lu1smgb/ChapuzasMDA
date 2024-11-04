@@ -1,154 +1,161 @@
 'use client'
-import React, { useState } from 'react'
+
+import { useState, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, ArrowRight, UserCircle, LogIn } from "lucide-react"
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-//import Image from 'next/image'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-//import { Input } from '@/components/ui/input'
-import { Image as ImageIcon, KeyRound, Volume } from 'lucide-react'
+import { createClient } from '@supabase/supabase-js'
 
-const loginMethods = [
-  { id: 'images', name: 'Imágenes', icon: ImageIcon },
-  { id: 'pin', name: 'PIN', icon: KeyRound },
-]
+// Inicializa el cliente de Supabase
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
-const imageOptions = [
-  { id: 1, emoji: '🐶', alt: 'Perro' },
-  { id: 2, emoji: '🐱', alt: 'Gato' },
-  { id: 3, emoji: '🐦', alt: 'Pájaro' },
-  { id: 4, emoji: '🐠', alt: 'Pez' },
-]
+type Alumno = {
+  id: string;
+  nombre_apellido: string;
+  tipo_login: 'PIN' | 'CONTRASEÑA' | 'IMAGEN';
+}
 
-export default function LoginScreen() {
-  const router = useRouter()
-  const [loginMethod, setLoginMethod] = useState('images')
-  const [selectedImages, setSelectedImages] = useState<number[]>([])
-  const [pin, setPin] = useState('')
+export default function ListaAlumnos() {
+  const [alumnos, setAlumnos] = useState<Alumno[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const router = useRouter()
 
-  const handleImageSelect = (id: number) => {
-    setSelectedImages(prev => {
-      if (prev.includes(id)) {
-        return prev.filter(imgId => imgId !== id)
-      } else if (prev.length < 3) {
-        return [...prev, id]
-      }
-      return prev
-    })
-  }
+  const alumnosPorPagina = 3
 
-  const handlePinInput = (digit: string) => {
-    if (pin.length < 4) {
-      setPin(prev => prev + digit)
-    }
-  }
+  useEffect(() => {
+    fetchAlumnos()
+  }, [currentPage])
 
-  const handleLogin = async () => {
-    const username = loginMethod === 'images' 
-      ? selectedImages.map(id => imageOptions.find(img => img.id === id)?.alt).join('')
-      : pin;
-
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password: username }), // En este caso, usamos el mismo valor como contraseña
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      router.push('/');
-    } else {
-      setError('Login incorrecto. Por favor, inténtalo de nuevo.');
-    }
-  }
-
-  const handleReset = () => {
-    setSelectedImages([])
-    setPin('')
+  const fetchAlumnos = async () => {
+    setIsLoading(true)
     setError('')
+    try {
+      const { data, error, count } = await supabase
+        .from('Alumno')
+        .select('id, nombre_apellido, tipo_login', { count: 'exact' })
+        .range((currentPage - 1) * alumnosPorPagina, currentPage * alumnosPorPagina - 1)
+
+      if (error) throw error
+
+      setAlumnos(data || [])
+      setTotalPages(Math.ceil((count || 0) / alumnosPorPagina))
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(`Error al cargar los alumnos: ${error.message}`)
+      } else {
+        setError('Error al cargar los alumnos. Por favor, intente de nuevo.')
+      }
+      console.error('Error fetching alumnos:', (error as Error).message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const playInstructions = () => {
-    // Aquí iría la lógica para reproducir instrucciones de voz
-    console.log("Reproduciendo instrucciones de voz")
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1)
+    }
   }
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
+  const handleAlumnoClick = (alumno: Alumno) => {
+    // Guardar el alumnoId en localStorage antes de la redirección
+    localStorage.setItem('alumnoId', alumno.id)
+    
+    switch (alumno.tipo_login) {
+      case 'PIN':
+        router.push('/login/pin')
+        break
+      case 'CONTRASEÑA':
+        router.push('/login/contrasena')
+        break
+      case 'IMAGEN':
+        router.push('/login/imagen')
+        break
+      default:
+        console.error('Tipo de login no reconocido')
+    }
+  }
+  
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-yellow-200 to-green-200 p-4 flex flex-col items-center justify-center">
-      <Card className="w-full max-w-md bg-white rounded-3xl shadow-lg p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-blue-600">¡Hola! Inicia sesión</h1>
-          <Button onClick={playInstructions} className="bg-purple-500 hover:bg-purple-600 rounded-full p-2">
-            <Volume className="h-6 w-6 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-8">
+      <div className="flex justify-between items-start mb-8">
+        <Link href="/" passHref>
+          <Button variant="outline" className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-xl py-6 px-8">
+            <ArrowLeft className="mr-2 h-6 w-6" />
+            Volver al Inicio
           </Button>
-        </div>
-        
-        <div className="flex justify-center space-x-4 mb-6">
-          {loginMethods.map(method => (
-            <Button
-              key={method.id}
-              onClick={() => {
-                setLoginMethod(method.id)
-                handleReset()
-              }}
-              className={`flex flex-col items-center p-4 ${loginMethod === method.id ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'}`}
-            >
-              <method.icon className="h-8 w-8 mb-2" />
-              <span className="text-lg">{method.name}</span>
-            </Button>
-          ))}
-        </div>
-
-        {loginMethod === 'images' ? (
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            {imageOptions.map(img => (
-              <Button
-                key={img.id}
-                onClick={() => handleImageSelect(img.id)}
-                className={`p-4 text-5xl ${selectedImages.includes(img.id) ? 'bg-green-300' : 'bg-gray-100'}`}
-              >
-                {img.emoji}
-              </Button>
-            ))}
-          </div>
-        ) : (
-          <div className="mb-6">
-            <div className="bg-gray-100 p-4 rounded-lg text-center text-3xl font-bold mb-4">
-              {pin.replace(/./g, '●')}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(num => (
-                <Button
-                  key={num}
-                  onClick={() => handlePinInput(num.toString())}
-                  className="p-4 text-2xl font-bold bg-blue-100 hover:bg-blue-200"
+        </Link>
+        <Link href="/login/formulario" passHref>
+          <Button className="bg-green-500 hover:bg-green-600 text-white text-xl py-6 px-8">
+            <LogIn className="mr-2 h-6 w-6" />
+            Iniciar Sesión Admin/Profesor
+          </Button>
+        </Link>
+      </div>
+      <main className="flex-grow flex flex-col items-center justify-center">
+        <div className="bg-white/80 backdrop-blur-md rounded-lg shadow-lg p-8 w-full max-w-6xl">
+          <h1 className="text-5xl font-bold mb-12 text-center text-gray-900">Selecciona tu Perfil</h1>
+          {error && <p className="text-red-500 text-center mb-6 text-xl">{error}</p>}
+          {isLoading ? (
+            <p className="text-center text-2xl">Cargando alumnos...</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+                {alumnos.map((alumno) => (
+                  <Card 
+                    key={alumno.id} 
+                    className="bg-blue-500 text-white transition-all duration-300 ease-in-out transform hover:scale-105 cursor-pointer"
+                    onClick={() => handleAlumnoClick(alumno)}
+                  >
+                    <CardHeader>
+                      <CardTitle className="flex items-center text-3xl">
+                        <UserCircle className="mr-4 h-12 w-12" />
+                        {alumno.nombre_apellido}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xl mt-4">Tipo de login: {alumno.tipo_login}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <div className="flex justify-between items-center mt-8">
+                <Button 
+                  onClick={prevPage} 
+                  disabled={currentPage === 1}
+                  className="bg-purple-500 hover:bg-purple-600 text-white text-xl py-4 px-6"
                 >
-                  {num}
+                  <ArrowLeft className="mr-2 h-6 w-6" />
+                  Anterior
                 </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
-        <div className="flex justify-between">
-          <Button 
-            onClick={handleReset} 
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full text-xl"
-          >
-            Borrar
-          </Button>
-          <Button 
-            onClick={handleLogin} 
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full text-xl"
-            disabled={loginMethod === 'images' ? selectedImages.length === 0 : pin.length < 4}
-          >
-            Entrar
-          </Button>
+                <span className="text-gray-700 text-2xl">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <Button 
+                  onClick={nextPage} 
+                  disabled={currentPage === totalPages}
+                  className="bg-purple-500 hover:bg-purple-600 text-white text-xl py-4 px-6"
+                >
+                  Siguiente
+                  <ArrowRight className="ml-2 h-6 w-6" />
+                </Button>
+              </div>
+            </>
+          )}
         </div>
-      </Card>
+      </main>
     </div>
   )
 }

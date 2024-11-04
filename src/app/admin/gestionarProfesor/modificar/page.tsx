@@ -15,11 +15,11 @@ import { ArrowLeft } from "lucide-react"
 import Link from 'next/link'
 import { supabase } from "@/lib/supabase"
 
-
 interface Profesor {
   id: number;
   nombre_apellido: string;
   aula: string;
+  contraseña: string;
 }
 
 export default function EditarProfesor() {
@@ -27,6 +27,7 @@ export default function EditarProfesor() {
   const [selectedProfesor, setSelectedProfesor] = useState<Profesor | null>(null)
   const [nuevoNombre, setNuevoNombre] = useState('')
   const [nuevoAula, setNuevoAula] = useState('')
+  const [nuevaContrasena, setNuevaContrasena] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -37,13 +38,27 @@ export default function EditarProfesor() {
       setError('')
       try {
         // Fetch profesores
-        const { data: profesoresData, error: profesoresError } = await supabase
+        const { data, error: fetchError } = await supabase
           .from('Profesor')
-          .select('id, nombre_apellido, aula')
+          .select('id, nombre_apellido, aula, contraseña')
 
-        if (profesoresError) throw profesoresError
+        if (fetchError) {
+          throw new Error(fetchError.message)
+        }
 
-        setProfesores(profesoresData || [])
+        if (data) {
+          // Convertir a unknown antes de la verificación de tipo
+          const profesoresData = data as unknown;
+
+          // Verifica que el tipo de datos sea correcto antes de asignar
+          if (Array.isArray(profesoresData) && profesoresData.every(item => {
+            return 'id' in item && 'nombre_apellido' in item && 'aula' in item && 'contraseña' in item;
+          })) {
+            setProfesores(profesoresData as Profesor[]);
+          } else {
+            throw new Error("Los datos devueltos no tienen el formato esperado");
+          }
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
         setError('Error al cargar los datos. Por favor, recargue la página.')
@@ -61,6 +76,7 @@ export default function EditarProfesor() {
     if (profesor) {
       setNuevoNombre(profesor.nombre_apellido)
       setNuevoAula(profesor.aula)
+      setNuevaContrasena(profesor.contraseña)
     }
     setSuccessMessage('')
   }
@@ -88,6 +104,9 @@ export default function EditarProfesor() {
     if (nuevoAula !== selectedProfesor.aula) {
       updates.aula = nuevoAula
     }
+    if (nuevaContrasena && nuevaContrasena !== selectedProfesor.contraseña) {
+      updates.contraseña = nuevaContrasena
+    }
 
     if (Object.keys(updates).length === 0) {
       setError('No se han realizado cambios.')
@@ -96,21 +115,23 @@ export default function EditarProfesor() {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from('Profesor')
         .update(updates)
         .eq('id', selectedProfesor.id)
         .select()
 
-      if (error) throw error
+      if (updateError) {
+        throw new Error(updateError.message)
+      }
 
       if (data && data.length > 0) {
         const updatedProfesor = data[0] as Profesor
         setSelectedProfesor(updatedProfesor)
         setNuevoNombre(updatedProfesor.nombre_apellido)
         setNuevoAula(updatedProfesor.aula)
-        
-        // Update the profesores array with the new data
+        setNuevaContrasena(updatedProfesor.contraseña)
+
         setProfesores(profesores.map(p => p.id === updatedProfesor.id ? updatedProfesor : p))
         
         setSuccessMessage('Profesor actualizado con éxito')
@@ -184,13 +205,26 @@ export default function EditarProfesor() {
               aria-required="true"
             />
           </div>
+          <div className="space-y-2 md:space-y-3">
+            <Label htmlFor="nuevaContrasena" className="text-base md:text-lg font-medium text-gray-900">
+              Nueva Contraseña o PIN
+            </Label>
+            <Input
+              id="nuevaContrasena"
+              value={nuevaContrasena}
+              onChange={(e) => setNuevaContrasena(e.target.value)}
+              className="text-base md:text-lg"
+              placeholder="Ingrese la nueva contraseña o PIN"
+              aria-required="true"
+            />
+          </div>
           <Button 
             type="submit" 
-            className="w-full text-base md:text-lg bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full text-base md:text-lg bg-blue-500 hover:bg-blue-600" 
+            disabled={isLoading} 
             aria-label="Actualizar profesor"
-            disabled={isLoading || !selectedProfesor}
           >
-            {isLoading ? 'Actualizando...' : 'Actualizar Profesor'}
+            {isLoading ? 'Cargando...' : 'Actualizar'}
           </Button>
         </form>
       </main>
