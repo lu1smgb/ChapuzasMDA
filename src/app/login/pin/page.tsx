@@ -12,7 +12,7 @@ import { supabase } from '@/lib/supabase'
 export default function LoginPin() {
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
-  const [alumno, setAlumno] = useState<{ id: string; nombre_apellido: string } | null>(null)
+  const [alumno, setAlumno] = useState<{ identificador: string; nombre: string } | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -26,11 +26,11 @@ export default function LoginPin() {
     }
   }, [])
   
-  const fetchAlumno = async (id: string) => {
+  const fetchAlumno = async (identificador: string) => {
     const { data, error } = await supabase
       .from('Alumno')
-      .select('id, nombre_apellido')
-      .eq('id', id)
+      .select('identificador, nombre')
+      .eq('identificador', identificador)
       .single()
 
     if (error) {
@@ -68,17 +68,17 @@ export default function LoginPin() {
     try {
       const { data, error } = await supabase
         .from('Alumno')
-        .select('id')
-        .eq('id', alumno.id)
-        .eq('credenciales', pin)
+        .select('identificador')
+        .eq('identificador', alumno.identificador)
+        .eq('credencial', pin)
         .single()
 
       if (error) throw error
 
       if (data) {
         router.push('/home')
-        localStorage.setItem('userId', alumno.id) // Guardar el identificador del alumno en el localStorage
-        localStorage.setItem('nombreUsuario', alumno.nombre_apellido) // Guardar el nombre del alumno en el localStorage
+        localStorage.setItem('userId', alumno.identificador) // Guardar el identificador del alumno en el localStorage
+        localStorage.setItem('nombreUsuario', alumno.nombre) // Guardar el nombre del alumno en el localStorage
         console.log("userId en localStorage después del login:", localStorage.getItem('userId'));
       } else {
         setError('PIN incorrecto')
@@ -129,7 +129,7 @@ export default function LoginPin() {
             {alumno ? (
               <>
                 <p className="text-xl text-center mb-6">
-                  Bienvenido, <strong>{alumno.nombre_apellido}</strong>
+                  Bienvenido, <strong>{alumno.nombre}</strong>
                 </p>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="flex flex-col items-center">
