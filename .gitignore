@@ -41,3 +41,7 @@ next-env.d.ts
 .anima
 .env
 .vscode
+
+#package.json
+package.json
+package-lock.json
