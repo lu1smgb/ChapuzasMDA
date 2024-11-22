@@ -36,7 +36,7 @@ export default function GestionMaterial() {
   return (
     <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-blue-100 md:via-purple-100 md:to-pink-100 flex items-center justify-center p-4">
       <main className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full md:max-w-2xl">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900">Gestión de Menú</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900">Gestión de Material</h1>
         <nav className="mb-8">
           <Link href="/admin" passHref>
             <Button variant="outline" className="w-full text-base md:text-lg bg-yellow-400 hover:bg-yellow-500" aria-label="Volver a administración">

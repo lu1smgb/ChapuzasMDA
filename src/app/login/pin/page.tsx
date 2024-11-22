@@ -76,7 +76,7 @@ export default function LoginPin() {
       if (error) throw error
 
       if (data) {
-        router.push('/home')
+        router.push('/menu-calendario-agenda')
         localStorage.setItem('userId', alumno.identificador) // Guardar el identificador del alumno en el localStorage
         localStorage.setItem('nombreUsuario', alumno.nombre) // Guardar el nombre del alumno en el localStorage
         console.log("userId en localStorage después del login:", localStorage.getItem('userId'));

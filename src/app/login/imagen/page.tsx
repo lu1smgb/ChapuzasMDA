@@ -259,7 +259,7 @@ export default function LoginImagen() {
     if (isCorrect) {
       localStorage.setItem('userId', alumno.identificador) // Guardar el identificador del alumno en el localStorage
       localStorage.setItem('nombreUsuario', alumno.nombre) // Guardar el nombre del alumno en el localStorage
-      router.push('/home')
+      router.push('/menu-calendario-agenda')
     } else {
       setError('Secuencia de imágenes incorrecta. Inténtalo de nuevo.')
       setSelectedImages([])

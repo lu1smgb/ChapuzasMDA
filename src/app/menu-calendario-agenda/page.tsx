@@ -76,17 +76,19 @@ export default function StudentAgenda() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4 flex flex-col">
-      <Button
-      onClick={() => router.push('/home')} 
-      className="mb-10 bg-yellow-400 hover:bg-yellow-500 text-blue-800 text-lg py-3 px-6 w-full h-20 flex items-center justify-center"
-      >
-      <ArrowLeft className="mr-1 h-10 w-10" /> ATRÁS
-      </Button>
-      <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">Mi Agenda</h1>
+      <div className="flex justify-end mb-10">
+        <Button
+          onClick={() => router.push('/login')} 
+          className="bg-red-500 hover:bg-red-600 text-white hover:text-black text-lg py-3 px-6 h-20 flex items-center justify-center"
+        >
+          <ArrowLeft className="mr-1 h-10 w-10" /> CERRAR SESIÓN
+        </Button>
+      </div>
+      <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">MI AGENDA</h1>
       <div className="flex flex-col md:flex-row gap-8 flex-grow">
       <Card className="flex-grow md:w-2/3 bg-white rounded-3xl shadow-lg overflow-hidden relative">
         <CardContent className="p-6">
-        <h2 className="text-3xl font-bold mb-4 text-purple-600">Mis Tareas</h2>
+        <h2 className="text-3xl font-bold mb-4 text-purple-600">TAREAS PARA HOY</h2>
         <div className="space-y-4 relative">
           {tasks.map((task) => (
           <motion.div
@@ -133,7 +135,7 @@ export default function StudentAgenda() {
         className="w-full h-full flex flex-col items-center justify-center p-6 bg-green-400 hover:bg-green-500 text-white rounded-2xl text-center"
         >
         <Calendar className="w-32 h-32 mb-4" />
-        <h2 className="text-4xl font-bold">Calendario</h2>
+        <h2 className="text-4xl font-bold">CALENDARIO</h2>
         </Button>
       </Card>
       </div>

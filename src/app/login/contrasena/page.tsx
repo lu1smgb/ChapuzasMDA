@@ -70,7 +70,7 @@ export default function LoginContrasena() {
       if (error) throw error
 
       if (data) {
-        router.push('/home')
+        router.push('/menu-calendario-agenda')
         localStorage.setItem('userId', alumno.identificador)
         localStorage.setItem('nombreUsuario', alumno.nombre) // Guardar el nombre del alumno en el localStorage
       } else {
