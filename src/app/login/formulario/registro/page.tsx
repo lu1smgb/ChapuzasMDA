@@ -8,28 +8,26 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, Loader2 } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { supabase } from "@/lib/supabase"
+
+//Código de verificación para que solo pueda registrarse el administrador y no otros.
+const verificationCode = '1234';
 
 export default function AdminRegistrationPage() {
   const [formData, setFormData] = useState({
-    username: '',
+    fullName: '',
     password: '',
     confirmPassword: '',
-    email: '',
-    fullName: '',
-    role: ''
+    codeVerification: '',
   })
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handleRoleChange = (value: string) => {
-    setFormData(prev => ({ ...prev, role: value }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,32 +35,35 @@ export default function AdminRegistrationPage() {
     setError('')
     setIsLoading(true)
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Las contraseñas no coinciden')
-      setIsLoading(false)
-      return
+    if (formData.password !== formData.confirmPassword) { // Verificar si las contraseñas coinciden
+      setError('Las contraseñas no coinciden');
+      setIsLoading(false);
+      return;
     }
 
     try {
-      const response = await fetch('/api/register-admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      })
+      const { data, error } = await supabase // Hacer insert en supabase
+        .from('Administrador')
+        .insert([
+          { 
+            nombre_apellidos: formData.fullName,
+            contraseña: formData.password,
+          }
+        ]);
 
-      const data = await response.json()
+      if (error) throw error;
 
-      if (data.success) {
-        router.push('/admin-login?registered=true')
-      } else {
-        setError(data.message || 'Error al registrar. Por favor, inténtelo de nuevo.')
-      }
+    setSuccessMessage('Registro exitoso. ¡Bienvenido!');
+
+    //Limpiar el contenido tras enviar el formulario
+    setFormData({ fullName: '', password: '', confirmPassword: '', codeVerification: '' });
+
     } catch (err) {
       setError('Ocurrió un error al registrar. Por favor, inténtelo de nuevo más tarde.')
     } finally {
       setIsLoading(false)
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-purple-100 flex items-center justify-center p-4">
@@ -73,14 +74,14 @@ export default function AdminRegistrationPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="username">Nombre de usuario</Label>
+          <div className="space-y-2">
+              <Label htmlFor="fullName">Nombre Completo</Label>
               <Input
-                id="username"
-                name="username"
+                id="fullName"
+                name="fullName"
                 type="text"
-                placeholder="Ingrese su nombre de usuario"
-                value={formData.username}
+                placeholder="Ingrese su nombre completo"
+                value={formData.fullName}
                 onChange={handleChange}
                 required
               />
@@ -89,8 +90,8 @@ export default function AdminRegistrationPage() {
               <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
-                name="password"
                 type="password"
+                name="password"
                 placeholder="Ingrese su contraseña"
                 value={formData.password}
                 onChange={handleChange}
@@ -110,30 +111,23 @@ export default function AdminRegistrationPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico</Label>
+              <Label htmlFor="codeVerification">Código de verificación</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="Ingrese su correo electrónico"
-                value={formData.email}
-                onChange={handleChange}
-                required
+              id="codeVerification"
+              name="codeVerification"
+              type="text"
+              placeholder="Ingrese el código de verificación"
+              value={formData.codeVerification}
+              onChange={handleChange}
+              maxLength={4}
+              required
               />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fullName">Nombre Completo</Label>
-              <Input
-                id="fullName"
-                name="fullName"
-                type="text"
-                placeholder="Ingrese su nombre completo"
-                value={formData.fullName}
-                onChange={handleChange}
-                required
-              />
+              {formData.codeVerification.length === 4 && formData.codeVerification !== verificationCode && (
+              <p className="text-red-500 text-sm">El código de verificación es incorrecto</p>
+              )}
             </div>
             {error && <p className="text-red-500 text-sm">{error}</p>}
+            {successMessage && <p className="text-green-500 text-sm">{successMessage}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>

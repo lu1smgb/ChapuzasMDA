@@ -10,15 +10,12 @@ import { ArrowLeft, Plus, Trash2 } from "lucide-react"
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useEffect } from 'react'
 
 type Material = {
   nombre: string;
   cantidad: number;
 }
-
-const materialesDisponibles = [
-  "Cartulinas", "Papel", "Bolígrafos", "Lápices", "Gomas", "Tijeras", "Pegamento", "Cinta adhesiva"
-]
 
 export default function CrearPedidoMaterial() {
   const [nombre_tarea, setNombre] = useState('')
@@ -28,8 +25,28 @@ export default function CrearPedidoMaterial() {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const router = useRouter()
+  const [materialesDisponibles, setMaterialesDisponibles] = useState<string[]>([])
 
-  const handleAddMaterial = () => {
+
+  useEffect(() => {
+    const fetchMateriales = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('Material')
+          .select('nombre')
+  
+        if (error) throw error
+  
+        setMaterialesDisponibles(data.map((material: { nombre: string }) => material.nombre))
+      } catch (error: unknown) {
+        console.error('Error fetching materials:', error)
+      }
+    }
+  
+    fetchMateriales()
+  }, [])
+
+  const handleAddMaterial = () => { 
     setMateriales([...materiales, { nombre: '', cantidad: 1 }])
   }
 
@@ -68,8 +85,29 @@ export default function CrearPedidoMaterial() {
 
       if (error) throw error
 
+      const tareaId = data[0].id;
+
+      const pedido = materiales.map(material => ({
+        id_tarea: tareaId,
+        tipo_material: material.nombre,
+        cantidad: material.cantidad,
+      }));
+  
+      const { error: pedidoError } = await supabase
+        .from('PedidoMaterial')
+        .insert(pedido);
+
+      if (pedidoError) throw pedidoError
+  
+      //Mostrar mensaje de éxito
       console.log('Pedido creado:', data)
       setSuccessMessage('¡Pedido de material creado exitosamente!')
+      
+      //Limpiar formulario
+      setMateriales([]);
+      setDescripcion('');
+      setNombre('');
+
     } catch (error: unknown) {
       setError('Error al crear el pedido. Por favor, intente de nuevo.')
       if (error instanceof Error) {

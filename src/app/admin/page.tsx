@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils } from "lucide-react"
+import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils, Paperclip } from "lucide-react"
 import Link from 'next/link'
 
-// Simulación de una función que obtiene el nombre del administrador
+// Función que obtiene el nombre del administrador
 const getAdminName = () => {
-  // Aquí podrías hacer una llamada a una API o obtener el nombre desde un contexto
-  return 'Javier';
+  return localStorage.getItem('adminName') || '';
 };
 
 export default function AdminDashboard() {
@@ -72,6 +71,13 @@ export default function AdminDashboard() {
       link: '/admin/gestionarMenu',
       color: 'bg-teal-500 hover:bg-teal-600'
     },
+    { 
+      title: 'Gestionar Material', 
+      description: 'Añadir, modificar y eliminar material', 
+      icon: Paperclip, 
+      link: '/admin/gestionarMaterial',
+      color: 'bg-cyan-500 hover:bg-cyan-600'
+    },
   ]
 
   return (
@@ -84,7 +90,7 @@ export default function AdminDashboard() {
       </div>
       <main className="flex-grow flex flex-col items-center justify-center">
         <div className="bg-white/80 backdrop-blur-md rounded-lg shadow-lg p-6 w-full max-w-5xl">
-          <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">Menú</h1>
+          <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">Panel de Administración</h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {menuItems.map((item, index) => (
               <Link href={item.link} key={index} className="block">
@@ -109,12 +115,13 @@ export default function AdminDashboard() {
             ))}
           </div>
           <Button 
-            variant="outline" 
-            className="mt-8 w-full text-lg bg-red-500 hover:bg-red-600 text-white"
-            aria-label="Cerrar sesión"
+          variant="outline" 
+          className="mt-8 w-full text-lg bg-red-500 hover:bg-red-600 text-white"
+          aria-label="Cerrar sesión"
+          onClick={() => window.location.href = '/login'}
           >
-            <UserMinus className="mr-2 h-5 w-5" aria-hidden="true" />
-            Cerrar Sesión
+          <UserMinus className="mr-2 h-5 w-5" aria-hidden="true" />
+          Cerrar Sesión
           </Button>
         </div>
       </main>
