@@ -34,49 +34,28 @@ export default function AdminDashboard() {
       description: 'Añadir, modificar y eliminar profesores', 
       icon: UserCog, 
       link: '/admin/gestionarProfesor',
-      color: 'bg-green-500 hover:bg-green-600'
+      color: 'bg-cyan-700 hover:bg-cyan-800'
     },
     { 
-      title: 'Seguimiento del Alumno', 
-      description: 'Ver progreso y actividades de los alumnos', 
-      icon: BookOpen, 
-      link: '/admin/student-tracking',
-      color: 'bg-purple-500 hover:bg-purple-600'
-    },
-    { 
-      title: 'Crear Tareas', 
+      title: 'Administrar Tareas', 
       description: 'Diseñar y crear nuevas tareas', 
       icon: ClipboardList, 
       link: '/admin/crear-tarea',
-      color: 'bg-yellow-500 hover:bg-yellow-600'
+      color: 'bg-orange-500 hover:bg-orange-600'
     },
     { 
       title: 'Asignar Tareas', 
       description: 'Asignar tareas a alumnos', 
       icon: Send, 
       link: '/admin/asignar-tarea',
-      color: 'bg-pink-500 hover:bg-pink-600'
+      color: 'bg-amber-700 hover:bg-amber-800'
     },
     { 
-      title: 'Administrar Juegos', 
-      description: 'Gestionar juegos educativos', 
-      icon: Gamepad2, 
-      link: '/admin/manage-games',
-      color: 'bg-indigo-500 hover:bg-indigo-600'
-    },
-    { 
-      title: 'Gestionar Menú', 
+      title: 'Administrar Menú', 
       description: 'Añadir, modificar y eliminar menús', 
       icon: Utensils, 
       link: '/admin/gestionarMenu',
-      color: 'bg-teal-500 hover:bg-teal-600'
-    },
-    { 
-      title: 'Gestionar Material', 
-      description: 'Añadir, modificar y eliminar material', 
-      icon: Paperclip, 
-      link: '/admin/gestionarMaterial',
-      color: 'bg-cyan-500 hover:bg-cyan-600'
+      color: 'bg-green-500 hover:bg-green-600'
     },
   ]
 
@@ -87,11 +66,20 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold">¡Bienvenido, {adminName}!</h1>
           <PartyPopper className="h-6 w-6 text-yellow-500" />
         </div>
+        <Button 
+          variant="outline" 
+          className="text-lg bg-red-500 hover:bg-red-600 text-white"
+          aria-label="Cerrar sesión"
+          onClick={() => window.location.href = '/login'}
+        >
+          <UserMinus className="mr-2 h-5 w-5" aria-hidden="true" />
+          Cerrar Sesión
+        </Button>
       </div>
       <main className="flex-grow flex flex-col items-center justify-center">
         <div className="bg-white/80 backdrop-blur-md rounded-lg shadow-lg p-6 w-full max-w-5xl">
           <h1 className="text-4xl font-bold mb-8 text-center text-gray-900">Panel de Administración</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {menuItems.map((item, index) => (
               <Link href={item.link} key={index} className="block">
                 <Card 
@@ -114,17 +102,7 @@ export default function AdminDashboard() {
               </Link>
             ))}
           </div>
-          <Button 
-          variant="outline" 
-          className="mt-8 w-full text-lg bg-red-500 hover:bg-red-600 text-white"
-          aria-label="Cerrar sesión"
-          onClick={() => window.location.href = '/login'}
-          >
-          <UserMinus className="mr-2 h-5 w-5" aria-hidden="true" />
-          Cerrar Sesión
-          </Button>
         </div>
       </main>
     </div>
-  )
-}
+  )}
