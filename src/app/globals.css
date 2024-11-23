@@ -76,3 +76,12 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@font-face {
+  font-family: 'Escolar';
+  src: url('../assets/fonts/Escolar_Negrita.TTF') format('truetype');
+}
+
+body {
+  font-family: 'Escolar', sans-serif;
+}
