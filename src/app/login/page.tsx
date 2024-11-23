@@ -87,7 +87,7 @@ export default function ListaAlumnos() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col">
+    <div className="font-escolar min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col">
       <div className="flex justify-end p-4">
         <Link href="/login/formulario" passHref>
           <Button className="bg-green-500 hover:bg-green-600 text-white text-xl py-6 px-8">

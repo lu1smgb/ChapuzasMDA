@@ -63,7 +63,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4">
       <div className="flex justify-between items-start p-4">
         <div className="flex items-center space-x-2">
-          <h1 className="text-3xl font-bold">¡Bienvenido, {adminName}!</h1>
+          <h1 className="text-3xl font-bold">¡Bienvenido/a, {adminName}!</h1>
           <PartyPopper className="h-6 w-6 text-yellow-500" />
         </div>
         <Button 

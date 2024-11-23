@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, Car, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { supabase } from "@/lib/supabase";
 
 
@@ -43,7 +43,7 @@ export default function Calendario() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4">  
+    <div className="font-escolar min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4">  
       <Button  // Botón para volver al menú de calendario y agenda
         onClick={() => router.push('/menu-calendario-agenda')} 
         className="mb-10 bg-yellow-400 hover:bg-yellow-500 text-blue-800 text-lg py-3 px-6 w-full h-20 flex items-center justify-center"
