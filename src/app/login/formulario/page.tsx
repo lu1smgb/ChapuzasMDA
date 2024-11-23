@@ -25,18 +25,18 @@ export default function AdminLoginPage() {
     try {
       const { data: adminData, error: adminError } = await supabase
       .from('Administrador')
-      .select('nombre_apellidos , contraseña')
-      .eq('nombre_apellidos', fullName)
-      .eq('contraseña', password)
+      .select('nombre , credencial')
+      .eq('nombre', fullName)
+      .eq('credencial', password)
       .single();
 
       let professorData = null;
       if (adminError || !adminData) {
         const { data, error } = await supabase
           .from('Profesor')
-          .select('nombre_apellido , contraseña')
-          .eq('nombre_apellido', fullName)
-          .eq('contraseña', password)
+          .select('nombre , credencial')
+          .eq('nombre', fullName)
+          .eq('credencial', password)
           .single();
         professorData = data;
       }
@@ -104,7 +104,7 @@ export default function AdminLoginPage() {
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Link href="/login/formulario/registro" passHref>
+          <Link href="/login/formulario/registro-admin" passHref>
             <Button variant="outline" className="w-full">
               Registrarse como Administrador
             </Button>
