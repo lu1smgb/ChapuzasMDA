@@ -75,7 +75,7 @@ export default function StudentAgenda() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4 flex flex-col">
+    <div className="font-escolar min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4 flex flex-col">
       <div className="flex justify-end mb-10">
         <Button
           onClick={() => router.push('/login')} 
@@ -131,7 +131,7 @@ export default function StudentAgenda() {
       </Card>
       <Card className="md:w-1/3 bg-white rounded-3xl shadow-lg flex">
         <Button
-        onClick={() => router.push('/calendario')}
+        onClick={() => router.push('/menu-calendario-agenda/calendario')}
         className="w-full h-full flex flex-col items-center justify-center p-6 bg-green-400 hover:bg-green-500 text-white rounded-2xl text-center"
         >
         <Calendar className="w-32 h-32 mb-4" />
