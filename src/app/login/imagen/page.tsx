@@ -17,11 +17,11 @@ type ImageOption = {
 
 const imageOptions: ImageOption[] = [
   { name: 'Manzana roja', src: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=300&h=300&fit=crop', alt: 'Manzana roja' },
-  { name: 'Plátano amarillo', src: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=300&fit=crop', alt: 'Plátano amarillo' },
+  { name: 'Platano amarillo', src: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=300&fit=crop', alt: 'Platano amarillo' },
   { name: 'Coche rojo', src: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=300&h=300&fit=crop', alt: 'Coche rojo' },
   { name: 'Perro gracioso', src: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=300&h=300&fit=crop', alt: 'Perro gracioso' },
   { name: 'Casa de madera', src: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=300&h=300&fit=crop', alt: 'Casa de madera' },
-  { name: 'Árbol en el campo', src: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=300&h=300&fit=crop', alt: 'Árbol en el campo' },
+  { name: 'Arbol en el campo', src: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=300&h=300&fit=crop', alt: 'Arbol en el campo' },
 ]
 
 export default function LoginImagen() {
@@ -137,7 +137,7 @@ export default function LoginImagen() {
 
   return (
     <div className="h-screen flex flex-col p-4 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
-      <Link href="/lista-alumnos" passHref>
+      <Link href="/login" passHref>
         <Button variant="outline" className="self-start mb-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-lg py-2 px-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver

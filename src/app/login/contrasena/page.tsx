@@ -84,10 +84,10 @@ export default function LoginContrasena() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-8">
-      <Link href="/lista-alumnos" passHref>
+      <Link href="/login" passHref>
         <Button variant="outline" className="self-start mb-8 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-xl py-6 px-8">
           <ArrowLeft className="mr-2 h-6 w-6" />
-          Volver a la Lista de Alumnos
+          Volver
         </Button>
       </Link>
       <main className="flex-grow flex flex-col items-center justify-center">
