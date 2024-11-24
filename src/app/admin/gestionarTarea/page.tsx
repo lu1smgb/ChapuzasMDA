@@ -24,7 +24,7 @@ interface Tarea {
   id_alumno: number;
   completada: boolean;
   tipo: string;
-  Alumno: Alumno[];
+  Alumno: Alumno;
 }
 
 export default function TaskList() {
@@ -42,6 +42,33 @@ export default function TaskList() {
     fetchTasks();
   }, []);
 
+  // Obtiene las tareas de la tabla nombre_tabla y les asigna el tipo tipo_tabla
+  const fetchAndMapTasks = async (nombre_tabla: string, tipo_tabla: string): Promise<Tarea[]> => {
+    try {
+      const { data, error } = await supabase
+        .from(nombre_tabla)
+        .select("identificador, nombre, descripcion, fecha_inicio, fecha_fin, id_alumno, completada, Alumno(nombre)");
+  
+      if (error) throw error;
+  
+      return data.map(t => ({
+        identificador: t.identificador,
+        nombre: t.nombre,
+        descripcion: t.descripcion,
+        fecha_inicio: t.fecha_inicio,
+        fecha_fin: t.fecha_fin,
+        id_alumno: t.id_alumno,
+        completada: t.completada,
+        tipo: tipo_tabla, // Asignar tipo según la tabla
+        Alumno: Array.isArray(t.Alumno) ? t.Alumno[0] : t.Alumno, // Asegurar que Alumno sea un objeto
+      }));
+    } catch (error) {
+      console.error(`Error al obtener tareas de ${nombre_tabla}:`, error);
+      return [];
+    }
+  };
+  
+
   const fetchTasks = async () => {
     setIsLoading(true);
     setError(null);
@@ -49,17 +76,16 @@ export default function TaskList() {
       const today = new Date().toISOString().split('T')[0];
       let allTasks: Tarea[] = [];
 
-      // Obtener tareas de la tabla Tarea_Juego
-      const { data: tareas2, error: error2 } = await supabase
-        .from("Tarea_Juego")
-        .select("identificador, nombre, descripcion, fecha_inicio, fecha_fin, id_alumno, completada, Alumno(nombre)");
-      
-      if (error2) throw error2;
-      
-      if (tareas2) {
-        allTasks = tareas2.map(t => ({ ...t, tipo: "Tarea_Juego" }));
-        console.log("Tareas obtenidas de Tarea_Juego:", allTasks);
-      }
+      const [tareasJuego, tareasMenu, tareasMaterial, tareasPasos] = await Promise.all([
+        fetchAndMapTasks("Tarea_Juego", "Tarea_Juego"),
+        fetchAndMapTasks("Tarea_Menu", "Tarea_Menu"),
+        fetchAndMapTasks("Tarea_Material", "Tarea_Material"),
+        fetchAndMapTasks("Tarea_Pasos", "Tarea_Pasos")
+      ]);
+
+      allTasks = [...tareasJuego, ...tareasMaterial, ...tareasMenu, ...tareasPasos]
+
+      console.log("Todas las tareas combinadas:", allTasks);
 
       // Ordenar tareas
       const orderedTasks = allTasks.sort((a, b) => {
@@ -105,7 +131,7 @@ export default function TaskList() {
   const filteredTasks = tasks.filter(task =>
     task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
     // Verifica si Alumnos está definido y contiene al menos un alumno
-    (task.Alumno[0]?.nombre || '').toLowerCase().includes(filterStudentName.toLowerCase()) &&
+    (task.Alumno.nombre || '').toLowerCase().includes(filterStudentName.toLowerCase()) &&
     (!filterStartDate || task.fecha_inicio >= filterStartDate) &&
     (!filterEndDate || task.fecha_fin <= filterEndDate)
   );
@@ -176,12 +202,17 @@ export default function TaskList() {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="font-medium">{task.nombre}</p>
-                      <p className="text-sm text-gray-600">Alumno: {task.Alumno[0]?.nombre || 'No asignado'}</p>
+                      <p className="text-sm text-gray-600">Alumno: {task.Alumno.nombre || 'No asignado'}</p>
                       <p className="text-sm text-gray-600">
                         Fechas: {new Date(task.fecha_inicio).toLocaleDateString()} - {new Date(task.fecha_fin).toLocaleDateString()}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Estado: {task.completada ? "Completada" : "Pendiente"}
+                        Estado: 
+                        {task.completada 
+                          ? "Completada" 
+                          : new Date(task.fecha_fin) < new Date() 
+                            ? "Retrasada" 
+                            : "Pendiente"}
                       </p>
                     </div>
                     <div className="flex space-x-2">
@@ -226,7 +257,7 @@ export default function TaskList() {
         </div>
       )}
 
-      <Button onClick={() => router.push('./gestionar-tarea')} className="w-full bg-green-600 hover:bg-green-700 text-white">
+      <Button onClick={() => router.push('./gestionarTarea/anad-tarea')} className="w-full bg-green-600 hover:bg-green-700 text-white">
         Añadir nueva tarea
       </Button>
     </div>

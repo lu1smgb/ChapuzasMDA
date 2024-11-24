@@ -40,7 +40,7 @@ export default function AdminDashboard() {
       title: 'Administrar Tareas', 
       description: 'Diseñar y crear nuevas tareas', 
       icon: ClipboardList, 
-      link: '/admin/crear-tarea',
+      link: '/admin/gestionarTarea',
       color: 'bg-orange-500 hover:bg-orange-600'
     },
     { 
