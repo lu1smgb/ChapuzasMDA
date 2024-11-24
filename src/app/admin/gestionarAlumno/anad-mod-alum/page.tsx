@@ -120,7 +120,7 @@ export default function StudentForm() {
 
   const translateImageName = (filename: string): LoginImage => {
     const name = filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
-    const capitalizedName = name.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     return {
       name: capitalizedName,
       src: `${supabaseUrl}/storage/v1/object/public/ImagenesPrueba/login_alumno/${filename}`,

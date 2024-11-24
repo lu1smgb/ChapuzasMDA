@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Search, School, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, Search, School, Pencil, Trash2, Eye } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import {
@@ -148,6 +148,15 @@ export default function StudentList() {
                   >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Eliminar
+                  </Button>
+                  <Button 
+                    onClick={() => router.push(`./gestionarAlumno/seguimiento-alum?id=${student.identificador}`)}
+                    variant="outline" 
+                    size="sm" 
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Ver seguimiento
                   </Button>
                 </div>
               </div>
