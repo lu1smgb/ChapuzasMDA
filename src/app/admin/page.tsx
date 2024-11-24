@@ -24,7 +24,7 @@ export default function AdminDashboard() {
   const menuItems = [
     { 
       title: 'Administrar Alumno', 
-      description: 'Añadir, modificar y eliminar alumnos', 
+      description: 'Añadir, modificar, eliminar y seguimiento de alumnos', 
       icon: UserPlus, 
       link: '/admin/gestionarAlumno',
       color: 'bg-blue-500 hover:bg-blue-600'

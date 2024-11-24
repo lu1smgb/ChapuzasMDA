@@ -111,7 +111,7 @@ export default function StudentAgenda() {
           </motion.div>
           ))}
           {tasks.length === 0 && (
-          <p className="text-center text-gray-500 text-xl">¡No tienes tareas pendientes!</p>
+          <p className="text-center font-bold text-gray-600 text-2xl">¡NO HAY TAREAS!</p>
           )}
         </div>
         </CardContent>
@@ -129,13 +129,13 @@ export default function StudentAgenda() {
         )}
         </AnimatePresence>
       </Card>
-      <Card className="md:w-1/3 bg-white rounded-3xl shadow-lg flex">
+      <Card className="md:w-1/6 bg-white rounded-3xl shadow-lg flex">
         <Button
         onClick={() => router.push('/menu-calendario-agenda/calendario')}
-        className="w-full h-full flex flex-col items-center justify-center p-6 bg-green-400 hover:bg-green-500 text-white rounded-2xl text-center"
+        className="w-full h-full flex flex-col items-center justify-center p-6 bg-green-500 hover:bg-green-600 text-white rounded-2xl text-center"
         >
-        <Calendar className="w-32 h-32 mb-4" />
-        <h2 className="text-4xl font-bold">CALENDARIO</h2>
+        <Calendar className="w-5 h-5 mb-2" />
+        <h2 className="text-xl md:text-2xl font-bold text-center">CALENDARIO</h2>
         </Button>
       </Card>
       </div>
