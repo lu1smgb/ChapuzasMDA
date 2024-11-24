@@ -4,13 +4,12 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, Loader2, X } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -32,12 +31,19 @@ interface Alumno {
   numero_pasos: number;
 }
 
+interface LoginImage {
+  name: string;
+  src: string;
+  alt: string;
+}
+
 export default function StudentForm() {
   const [student, setStudent] = useState<Alumno | null>(null)
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [aula, setAula] = useState('')
-  const [image, setImage] = useState('')
+  const [image, setImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState('')
   const [birthYear, setBirthYear] = useState('')
   const [loginType, setLoginType] = useState('')
   const [IU_Audio, setIU_Audio] = useState(false)
@@ -50,6 +56,8 @@ export default function StudentForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [loginImages, setLoginImages] = useState<LoginImage[]>([])
+  const [availableLoginImages, setAvailableLoginImages] = useState<LoginImage[]>([])
 
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -59,6 +67,7 @@ export default function StudentForm() {
     if (id) {
       fetchStudent(parseInt(id));
     }
+    fetchLoginImages();
   }, [id]);
 
   const fetchStudent = async (id: number) => {
@@ -75,7 +84,7 @@ export default function StudentForm() {
       setName(data.nombre);
       setPassword(data.credencial);
       setAula(data.aula);
-      setImage(data.imagen_perfil);
+      setImagePreview(data.imagen_perfil);
       setBirthYear(data.año_nacimiento);
       setLoginType(data.tipo_login);
       setIU_Audio(data.IU_Audio);
@@ -84,10 +93,63 @@ export default function StudentForm() {
       setIU_Pictograma(data.IU_Pictograma);
       setIU_Texto(data.IU_Texto);
       setNumeroPasos(data.numero_pasos);
+      if (data.tipo_login === 'IMAGEN') {
+        setLoginImages(data.credencial.split(',').map(translateImageName));
+      }
     } catch (error) {
       console.error("Error al obtener el alumno:", error);
       setError('Error al cargar los datos del alumno.');
     }
+  };
+
+  const fetchLoginImages = async () => {
+    try {
+      const { data, error } = await supabase.storage
+        .from('ImagenesPrueba')
+        .list('login_alumno');
+
+      if (error) throw error;
+
+      const imageNames = data.map(file => translateImageName(file.name));
+      setAvailableLoginImages(imageNames);
+    } catch (error) {
+      console.error("Error al obtener las imágenes de login:", error);
+      setError('Error al cargar las imágenes de login.');
+    }
+  };
+
+  const translateImageName = (filename: string): LoginImage => {
+    const name = filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+    const capitalizedName = name.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
+    return {
+      name: capitalizedName,
+      src: `${supabaseUrl}/storage/v1/object/public/ImagenesPrueba/login_alumno/${filename}`,
+      alt: capitalizedName
+    };
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const fileType = file.type;
+      if (fileType === 'image/jpeg' || fileType === 'image/png' || fileType === 'image/jpg') {
+        setImage(file);
+        setImagePreview(URL.createObjectURL(file));
+      } else {
+        setError('Por favor, seleccione una imagen en formato JPG, JPEG o PNG.');
+      }
+    }
+  };
+
+  const handleLoginImageSelect = (image: LoginImage) => {
+    setLoginImages(prev => {
+      const exists = prev.some(img => img.name === image.name);
+      if (exists) {
+        return prev.filter(img => img.name !== image.name);
+      } else {
+        return [...prev, image];
+      }
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,18 +157,44 @@ export default function StudentForm() {
     setIsLoading(true)
     setError('')
     setSuccess('')
-    if (!name || !password || !aula || !birthYear || !loginType) {
+    if (!name || !aula || !birthYear || !loginType) {
       setError('Debe llenar todos los campos obligatorios.')
       setIsLoading(false)
       return
     }
-    
+
+    if (loginType === 'IMAGEN' && loginImages.length === 0) {
+      setError('Debe seleccionar al menos una imagen para el login.')
+      setIsLoading(false)
+      return
+    }
+
     try {
+      let imageUrl = student?.imagen_perfil || '';
+
+      if (image) {
+        const fileExt = image.name.split('.').pop()
+        const fileName = `${Math.random()}.${fileExt}`
+        const filePath = `alumnos/${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('ImagenesPrueba')
+          .upload(filePath, image);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('ImagenesPrueba')
+          .getPublicUrl(filePath)
+
+        imageUrl = publicUrl;
+      }
+
       const studentData = {
         nombre: name,
-        credencial: password,
+        credencial: loginType === 'IMAGEN' ? loginImages.map(img => img.name).join(',') : password,
         aula,
-        imagen_perfil: image,
+        imagen_perfil: imageUrl,
         año_nacimiento: birthYear,
         tipo_login: loginType,
         IU_Audio,
@@ -189,13 +277,43 @@ export default function StudentForm() {
               required
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="image">URL de la Imagen de Perfil</Label>
-            <Input
-              id="image"
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-            />
+          <div className="space-y-2 col-span-2">
+            <Label htmlFor="image">Imagen de Perfil</Label>
+            <div className="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg relative">
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Imagen de perfil"
+                  className="h-full w-full object-cover rounded-lg"
+                />
+              ) : (
+                <div className="text-center text-gray-500">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <p>Arrastra una imagen o haz clic para seleccionar una imagen (JPG, JPEG, PNG)</p>
+                </div>
+              )}
+              <Input
+                id="image"
+                name="image"
+                type="file"
+                accept="image/jpeg,image/png,image/jpg"
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="birthYear">Año de Nacimiento</Label>
@@ -234,13 +352,40 @@ export default function StudentForm() {
         <div className="space-y-2">
           <Label htmlFor="password">Credencial</Label>
           {loginType === 'IMAGEN' ? (
-            <Textarea
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nombre de imagen o secuencia de imágenes separadas por comas"
-              required
-            />
+            <div>
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                {loginImages.map((img, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={img.src}
+                      alt={img.alt}
+                      className="w-full h-20 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleLoginImageSelect(img)}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                      aria-label={`Remove ${img.name}`}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <Select
+                value=""
+                onValueChange={(value) => handleLoginImageSelect(JSON.parse(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Añadir imagen de login" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableLoginImages.map((img, index) => (
+                    <SelectItem key={index} value={JSON.stringify(img)}>{img.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           ) : (
             <div className="relative">
               <Input
@@ -290,12 +435,17 @@ export default function StudentForm() {
           </div>
         </div>
         <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white" disabled={isLoading}>
-          {student ? 'Guardar Cambios' : 'Añadir Alumno'}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {student ? 'Guardando cambios...' : 'Añadiendo alumno...'}
+            </>
+          ) : (
+            student ? 'Guardar Cambios' : 'Añadir Alumno'
+          )}
         </Button>
       </form>
     </div>
   )
 }
-
-
 
