@@ -76,3 +76,43 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Tipo de letra para los alumnos */
+
+@font-face {
+  font-family: 'Escolar';
+  src: url('../assets/fonts/Escolar_Negrita.TTF') format('truetype');
+}
+
+body {
+  font-family: 'Escolar', sans-serif;
+}
+
+.font-escolar {
+  font-family: 'Escolar', sans-serif;
+}
+
+
+/* Tipo de letra para el administrador y el profesor */
+
+@font-face {
+  font-family: 'GeistMonoVF';
+  src: url('../assets/fonts/GeistMonoVF.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'GeistVF';
+  src: url('../assets/fonts/GeistVF.woff') format('woff');
+}
+
+body{
+  font-family: 'GeristMonoVF', sans-serif;
+}
+
+.font-geist-mono {
+  font-family: 'GeistMonoVF', sans-serif;
+}
+
+.font-geist {
+  font-family: 'GeistVF', sans-serif;
+}
