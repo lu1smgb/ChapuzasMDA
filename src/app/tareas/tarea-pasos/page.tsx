@@ -157,6 +157,10 @@ import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
+/**
+ * Tipos de datos
+ */
+
 type Alumno = {
   identificador: string;
   nombre: string;
@@ -185,6 +189,10 @@ type Paso = {
   pictograma: string | null;
 }
 
+/**
+ * Componente principal
+ * @returns  JSX.Element
+ */
 export default function TareaPasos() {
   const [alumno, setAlumno] = useState<Alumno | null>(null)
   const [tarea, setTarea] = useState<Tarea | null>(null)
@@ -193,6 +201,9 @@ export default function TareaPasos() {
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
+  /**
+   * Cargar los datos del alumno, la tarea y los pasos al cargar el componente
+   */
   useEffect(() => {
     const alumnoId = localStorage.getItem('alumnoId')
     const tareaId = localStorage.getItem('tareaId')
@@ -205,6 +216,10 @@ export default function TareaPasos() {
     }
   }, [])
 
+  /**
+   *  Cargar los datos del alumno
+   * @param id 
+   */
   const fetchAlumno = async (id: string) => {
     const { data, error } = await supabase
       .from('Alumno')
@@ -219,7 +234,10 @@ export default function TareaPasos() {
       setAlumno(data)
     }
   }
-
+  /**
+   *  Cargar los datos de la tarea
+   * @param id 
+   */
   const fetchTarea = async (id: string) => {
     const { data, error } = await supabase
       .from('Tarea_Pasos')
@@ -234,7 +252,10 @@ export default function TareaPasos() {
       setTarea(data)
     }
   }
-
+  /**
+   *  Cargar los pasos de la tarea
+   * @param tareaId 
+   */
   const fetchPasos = async (tareaId: string) => {
     const { data, error } = await supabase
       .from('Pasos')
@@ -262,6 +283,10 @@ export default function TareaPasos() {
     }
   }
 
+  /**
+   *  Renderizar el contenido del paso actual
+   * @returns  JSX.Element | null
+   */
   const renderPasoContent = () => {
     if (!alumno || !pasos[currentStep]) return null
 
@@ -304,7 +329,9 @@ export default function TareaPasos() {
   if (!alumno || !tarea || pasos.length === 0) {
     return <div className="h-screen flex items-center justify-center text-2xl">Cargando...</div>
   }
-
+  /**
+   * Renderizar la vista principal
+   */
   return (
     <div className="h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4">
       <Button 

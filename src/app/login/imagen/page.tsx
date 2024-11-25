@@ -9,11 +9,16 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { motion } from 'framer-motion'
 
+
+  /*
+  * Tipo de dato para las opciones de imagen.
+  */
 type ImageOption = {
   name: string;
   src: string;
   alt: string;
 }
+
 
 const imageOptions: ImageOption[] = [
   { name: 'Manzana roja', src: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=300&h=300&fit=crop', alt: 'Manzana roja' },
@@ -24,6 +29,9 @@ const imageOptions: ImageOption[] = [
   { name: 'Arbol en el campo', src: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=300&h=300&fit=crop', alt: 'Arbol en el campo' },
 ]
 
+  /*
+  * Componente principal para la página de login con imagen.
+  */
 export default function LoginImagen() {
   const [alumno, setAlumno] = useState<{ identificador: string; nombre: string; credencial: string } | null>(null)
   const [selectedImages, setSelectedImages] = useState<string[]>([])
@@ -46,6 +54,10 @@ export default function LoginImagen() {
     }
   }, [alumno])
 
+  /*
+    * Función asíncrona para obtener los datos del alumno desde la base de datos.
+    * @param identificador - El ID del
+  */
   const fetchAlumno = async (identificador: string) => {
     const { data, error } = await supabase
       .from('Alumno')
@@ -61,6 +73,10 @@ export default function LoginImagen() {
     }
   }
 
+  /*
+    * Función para mezclar aleatoriamente un array.
+    * @param array - El array a mez
+  */
   const shuffleArray = (array: ImageOption[]) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -69,6 +85,10 @@ export default function LoginImagen() {
     return array;
   }
 
+  /*
+    * Manejador para seleccionar o deseleccionar una imagen.
+    * @param imageName - El nombre de la imagen a seleccionar o des
+  */
   const handleImageSelect = (imageName: string) => {
     setSelectedImages(prev => {
       const index = prev.indexOf(imageName)
@@ -80,6 +100,10 @@ export default function LoginImagen() {
     })
   }
 
+  /*
+    * Manejador para el envío del formulario.
+    * @param e - El evento de envío del formulario.
+  */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
@@ -109,6 +133,9 @@ export default function LoginImagen() {
     }
   }
 
+  /*
+    * Función para renderizar las opciones de imágenes.
+  */
   const renderImageOptions = () => {
     return (
       <div className="grid grid-cols-3 gap-4">
@@ -186,3 +213,4 @@ export default function LoginImagen() {
     </div>
   )
 }
+
