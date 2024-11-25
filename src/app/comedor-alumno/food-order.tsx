@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight, FileDown } from 'lucide-react'
 //import { jsPDF } from 'jspdf'
+//import './fonts.css'
 
 // Placeholder data (replace with Supabase fetching in the future)
 const placeholderClassrooms = [
@@ -142,22 +143,22 @@ export default function FoodOrder() {
   const renderStepContent = () => {
     switch (step) {
       case 'classroom':
-        if (classrooms.length === 0) return <p>Loading classrooms...</p>
+        if (classrooms.length === 0) return <p className="font-escolar">Loading classrooms...</p>
         const classroom = classrooms[currentIndex]
         return (
-          <div className="text-center">
-            <h2 className="text-7xl font-escolar mb-4">Select Classroom</h2>
+          <div className="text-center font-escolar">
+            <h2 className="text-2xl font-bold mb-4">Select Classroom</h2>
             <Image src={classroom.image} alt={classroom.name} width={200} height={200} className="mx-auto mb-4 rounded-full" />
             <p className="text-4xl font-bold">{classroom.name}</p>
             <p className="text-2xl mt-2">Teacher: {classroom.teacher}</p>
           </div>
         )
       case 'menu':
-        if (menuItems.length === 0) return <p>Loading menu items...</p>
+        if (menuItems.length === 0) return <p className="font-escolar">Loading menu items...</p>
         const menuItem = menuItems[currentIndex]
         const currentQuantity = getCurrentQuantity(menuItem.id)
         return (
-          <div className="text-center">
+          <div className="text-center font-escolar">
             <h2 className="text-2xl font-bold mb-4">Select Menu Item</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
@@ -176,7 +177,7 @@ export default function FoodOrder() {
         )
       case 'quantity':
         return (
-          <div className="text-center">
+          <div className="text-center font-escolar">
             <h2 className="text-2xl font-bold mb-4">Select Quantity</h2>
             <Image src={`/placeholder.svg?height=200&width=200&text=Hand ${quantity}`} alt={`Quantity: ${quantity}`} width={200} height={200} className="mx-auto mb-4" />
             <p className="text-4xl font-bold">{quantity}</p>
@@ -186,7 +187,7 @@ export default function FoodOrder() {
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4">
+    <div className="h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4 font-escolar">
       <div className="flex justify-between items-center mb-4">
         <Button 
           onClick={() => router.push('/home')} 
