@@ -92,7 +92,7 @@ export default function LoginImagen() {
     const requiredCredentials = alumno.credencial.split(',').map(cred => cred.trim())
 
     if (selectedImages.length !== requiredCredentials.length) {
-      setError('Número incorrecto de imágenes seleccionadas')
+      setError('Número incorrecto de imágenes selecccionadas')
       return
     }
 
