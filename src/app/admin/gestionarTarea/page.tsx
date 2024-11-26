@@ -130,11 +130,12 @@ export default function TaskList() {
 
   const filteredTasks = tasks.filter(task =>
     task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
-    // Verifica si Alumnos está definido y contiene al menos un alumno
-    (task.Alumno.nombre || '').toLowerCase().includes(filterStudentName.toLowerCase()) &&
+    // Verifica si task.Alumno existe y luego comprueba si su nombre incluye el valor de filtro
+    (task.Alumno ? task.Alumno.nombre.toLowerCase().includes(filterStudentName.toLowerCase()) : false) &&
     (!filterStartDate || task.fecha_inicio >= filterStartDate) &&
     (!filterEndDate || task.fecha_fin <= filterEndDate)
   );
+  
   
 
   return (

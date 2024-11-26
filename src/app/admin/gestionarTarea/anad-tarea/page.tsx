@@ -19,10 +19,10 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const tiposTarea = [
-  { value: 'Tarea_Juego', label: 'Tarea Juego' },
-  { value: 'Tarea_Menu', label: 'Tarea Menú' },
-  { value: 'Tarea_Material', label: 'Tarea Material' },
-  { value: 'Tarea_Pasos', label: 'Tarea Pasos' },
+  { value: 'Tarea_Juego', label: 'Tarea_Juego' },
+  { value: 'Tarea_Menu', label: 'Tarea_Menu' },
+  { value: 'Tarea_Material', label: 'Tarea_Material' },
+  { value: 'Tarea_Pasos', label: 'Tarea_Pasos' },
 ]
 
 const formSchema = z.object({
@@ -129,7 +129,7 @@ export default function FormularioTarea() {
           fecha_fin: new Date(data.fecha_fin).toISOString().slice(0, 19),
           nombre: data.nombre,
           descripcion: data.descripcion,
-          id_alumno: data.id_alumno.toString(),
+          id_alumno: data.id_alumno ? data.id_alumno.toString() : undefined,
           enlace: data.enlace,
           nombres_materiales: data.nombres_materiales,
           cantidades_materiales: data.cantidades_materiales,
@@ -153,7 +153,7 @@ export default function FormularioTarea() {
         ...values,
         fecha_inicio: new Date(values.fecha_inicio).toISOString(),
         fecha_fin: new Date(values.fecha_fin).toISOString(),
-        id_alumno: parseInt(values.id_alumno),
+        id_alumno: values.id_alumno ? parseInt(values.id_alumno) : undefined,
         aula_destino: values.aula_destino ? parseInt(values.aula_destino) : undefined,
         id_profesor: values.id_profesor ? parseInt(values.id_profesor) : undefined,
       }
@@ -161,13 +161,13 @@ export default function FormularioTarea() {
       let error;
       if (taskId) {
         const { error: updateError } = await supabase
-          .from(values.tipo_tarea)
+          .from('Tarea_Menu')
           .update(taskData)
           .eq('identificador', taskId)
         error = updateError
       } else {
         const { error: insertError } = await supabase
-          .from(values.tipo_tarea)
+          .from('Tarea_Menu')
           .insert(taskData)
         error = insertError
       }
@@ -176,7 +176,7 @@ export default function FormularioTarea() {
 
       setSuccessMessage(taskId ? 'Tarea actualizada correctamente.' : 'Tarea creada correctamente.')
       setTimeout(() => {
-        router.back()
+        router.push('.')
       }, 2000)
     } catch (error) {
       console.error('Error al guardar la tarea:', error)
@@ -296,36 +296,30 @@ export default function FormularioTarea() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Alumno</FormLabel>
-                  <Select 
-                    value={field.value}  
-                    onValueChange={field.onChange} 
+                  <Select
+                    onValueChange={(value) => field.onChange(value)}
+                    value={field.value}
+                    defaultValue=""
                   >
-                    <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un alumno">
-                        {field.value 
-                          ? alumnos.find(a => a.identificador === field.value)?.nombre 
-                          : "Selecciona un alumno"}
-                      </SelectValue>
+                      <SelectValue placeholder="Selecciona un alumno" />
                     </SelectTrigger>
-                    </FormControl>
                     <SelectContent>
                       {alumnos.map((alumno) => (
-                        <SelectItem key={alumno.identificador} value={alumno.identificador}>
+                        <SelectItem
+                          key={alumno.identificador}
+                          value={alumno.identificador.toString()}
+                        >
                           {alumno.nombre}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    {field.value
-                      ? `Alumno seleccionado: ${alumnos.find(a => a.identificador === field.value)?.nombre || 'No encontrado'}`
-                      : 'Debes seleccionar un alumno'}
-                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
           </div>
 
           {form.watch('tipo_tarea') === 'Tarea_Juego' && (
@@ -385,38 +379,35 @@ export default function FormularioTarea() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="id_profesor"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Profesor</FormLabel>
-                    <Select 
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un profesor" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {profesores.map((profesor) => (
-                          <SelectItem key={profesor.identificador} value={profesor.identificador}>
-                            {profesor.nombre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      {field.value
-                        ? `Profesor seleccionado: ${profesores.find(p => p.identificador === field.value)?.nombre || 'No encontrado'}`
-                        : 'Debes seleccionar un profesor'}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+             <FormField
+              control={form.control}
+              name="id_profesor"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Profesor</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(value)}
+                    value={field.value}
+                    defaultValue=""
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona un profesor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {profesores.map((profesor) => (
+                        <SelectItem
+                          key={profesor.identificador}
+                          value={profesor.identificador.toString()}
+                        >
+                          {profesor.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             </>
           )}
 
