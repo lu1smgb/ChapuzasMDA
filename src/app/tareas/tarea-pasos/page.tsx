@@ -187,6 +187,7 @@ type Paso = {
   audio: string | null;
   video: string | null;
   pictograma: string | null;
+  id_tarea: string | null;
 }
 
 /**
@@ -249,6 +250,7 @@ export default function TareaPasos() {
       console.error('Error fetching tarea:', error)
       setError('Error al cargar los datos de la tarea')
     } else if (data) {
+      //console.log(data)
       setTarea(data)
     }
   }
@@ -267,6 +269,7 @@ export default function TareaPasos() {
       console.error('Error fetching pasos:', error)
       setError('Error al cargar los pasos de la tarea')
     } else if (data) {
+      console.log(data)
       setPasos(data)
     }
   }

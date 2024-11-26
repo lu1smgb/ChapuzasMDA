@@ -73,6 +73,8 @@ export default function StudentAgenda() {
 
 
   const handleTaskClick = (task: Task) => {
+    localStorage.setItem('tareaId', task.id.toString());
+    console.log(task.id);
       switch(task.tipo_tabla) {
         case 'Tarea_Juego':
           router.push('/juego');
@@ -84,7 +86,7 @@ export default function StudentAgenda() {
           router.push('/menu');
           break;
         case 'Tarea_Pasos':
-          router.push('/pasos');
+          router.push('/tareas/tarea-pasos');
           break;
         default:
           console.error('Tipo de tarea desconocido');
