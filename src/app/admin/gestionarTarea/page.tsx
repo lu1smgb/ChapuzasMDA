@@ -257,7 +257,7 @@ export default function TaskList() {
         </div>
       )}
 
-      <Button onClick={() => router.push('./gestionarTarea/anad-cuatro-tareas')} className="w-full bg-green-600 hover:bg-green-700 text-white">
+      <Button onClick={() => router.push('./gestionarTarea/anad-tarea')} className="w-full bg-green-600 hover:bg-green-700 text-white">
         Añadir nueva tarea
       </Button>
     </div>
