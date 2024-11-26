@@ -9,6 +9,11 @@ import { ArrowLeft, Key, Backpack } from "lucide-react"
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
+/**
+ * Componente principal para la página de login con PIN.
+ * Maneja el estado del PIN, errores y datos del alumno.
+ */
+
 export default function LoginPin() {
   const [pin, setPin] = useState('')
   const [error, setError] = useState('')
@@ -26,6 +31,12 @@ export default function LoginPin() {
     }
   }, [])
   
+  
+  /**
+   * Función asíncrona para obtener los datos del alumno desde la base de datos.
+   * @param identificador - El ID del alumno a buscar.
+   */
+
   const fetchAlumno = async (identificador: string) => {
     const { data, error } = await supabase
       .from('Alumno')
@@ -41,15 +52,30 @@ export default function LoginPin() {
     }
   }
 
+  /**
+   * Manejador para ingresar un dígito al PIN.
+   * @param digit - El dígito a ingresar.
+   */
+
   const handlePinInput = (digit: string) => {
     if (pin.length < 4) {
       setPin(prev => prev + digit)
     }
   }
 
+  /**
+   * Manejador para borrar el último dígito del PIN.
+   */
+
   const handleBackspace = () => {
     setPin(prev => prev.slice(0, -1))
   }
+
+  /**
+   * Manejador para enviar el formulario.
+   * Verifica el PIN ingresado con la base de datos.
+   * @param e - El evento de envío del formulario.
+   */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -89,6 +115,10 @@ export default function LoginPin() {
     }
   }
 
+  /**
+   * Renderiza el teclado numérico.
+   */
+
   const renderKeypad = () => {
     const digits = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
     return (
@@ -111,6 +141,11 @@ export default function LoginPin() {
       </div>
     )
   }
+
+  /*
+    * Renderiza el contenido de la página.
+  */
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-8">
