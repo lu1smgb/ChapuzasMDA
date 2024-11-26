@@ -130,11 +130,12 @@ export default function TaskList() {
 
   const filteredTasks = tasks.filter(task =>
     task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
-    // Verifica si Alumnos está definido y contiene al menos un alumno
-    (task.Alumno.nombre || '').toLowerCase().includes(filterStudentName.toLowerCase()) &&
+    // Verifica si task.Alumno existe y luego comprueba si su nombre incluye el valor de filtro
+    (task.Alumno ? task.Alumno.nombre.toLowerCase().includes(filterStudentName.toLowerCase()) : false) &&
     (!filterStartDate || task.fecha_inicio >= filterStartDate) &&
     (!filterEndDate || task.fecha_fin <= filterEndDate)
   );
+  
   
 
   return (
@@ -256,7 +257,7 @@ export default function TaskList() {
         </div>
       )}
 
-      <Button onClick={() => router.push('./gestionarTarea/anad-tarea')} className="w-full bg-green-600 hover:bg-green-700 text-white">
+      <Button onClick={() => router.push('./gestionarTarea/anad-cuatro-tareas')} className="w-full bg-green-600 hover:bg-green-700 text-white">
         Añadir nueva tarea
       </Button>
     </div>
