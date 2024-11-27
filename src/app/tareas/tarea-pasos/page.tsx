@@ -1,151 +1,3 @@
-/*'use client'
-
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-
-// Datos de ejemplo
-const alumnoEjemplo = {
-  id: 1,
-  nombre: "Juan Pérez",
-  numero_pasos: 4,
-  IU_Audio: true,
-  IU_Video: false,
-  IU_Imagen: true,
-  IU_Pictograma: false,
-  IU_Texto: true
-}
-
-const tareaEjemplo = {
-  id: 1,
-  nombre: "Preparar un sándwich",
-  descripcion: "Aprende a hacer un sándwich paso a paso",
-  fecha_inicio: "2023-06-01T00:00:00Z",
-  fecha_fin: "2023-06-30T23:59:59Z"
-}
-
-const pasosEjemplo = [
-  {
-    id: 1,
-    texto: "Reúne todos los ingredientes: pan, jamón, queso, lechuga y tomate.",
-    imagen: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1080&h=1080&fit=crop",
-    audio: "/audio/paso1.mp3",
-    video: "https://example.com/video-sandwich-paso1.mp4"
-  },
-  {
-    id: 2,
-    texto: "Coloca dos rebanadas de pan en un plato.",
-    imagen: "https://images.unsplash.com/photo-1619096252214-ef06c45683e3?w=1080&h=1080&fit=crop",
-    audio: "/audio/paso2.mp3",
-    video: "https://example.com/video-sandwich-paso2.mp4"
-  },
-  {
-    id: 3,
-    texto: "Añade el jamón, el queso, la lechuga y el tomate sobre una rebanada de pan.",
-    imagen: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1080&h=1080&fit=crop",
-    audio: "/audio/paso3.mp3",
-    video: "https://example.com/video-sandwich-paso3.mp4"
-  },
-  {
-    id: 4,
-    texto: "Cubre con la otra rebanada de pan y disfruta tu sándwich.",
-    imagen: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=1080&h=1080&fit=crop",
-    audio: "/audio/paso4.mp3",
-    video: "https://example.com/video-sandwich-paso4.mp4"
-  }
-]
-
-export default function TareaPasos() {
-  const [currentStep, setCurrentStep] = useState(0)
-  const router = useRouter()
-
-  const nextStep = () => {
-    if (currentStep < alumnoEjemplo.numero_pasos - 1) {
-      setCurrentStep(currentStep + 1)
-    }
-  }
-
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  const renderPasoContent = () => {
-    const paso = pasosEjemplo[currentStep]
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-        <div className="flex flex-col justify-center">
-          {alumnoEjemplo.IU_Texto && paso.texto && (
-            <p className="text-2xl mb-4">{paso.texto}</p>
-          )}
-          {alumnoEjemplo.IU_Audio && paso.audio && (
-            <audio controls className="w-full mb-4">
-              <source src={paso.audio} type="audio/mpeg" />
-              Tu navegador no soporta el elemento de audio.
-            </audio>
-          )}
-        </div>
-        <div className="flex flex-col justify-center">
-          {alumnoEjemplo.IU_Imagen && paso.imagen && (
-            <img src={paso.imagen} alt={`Paso ${currentStep + 1}`} className="w-full h-auto object-contain mb-4 rounded-lg" />
-          )}
-          {alumnoEjemplo.IU_Video && paso.video && (
-            <video controls className="w-full h-auto object-contain rounded-lg">
-              <source src={paso.video} type="video/mp4" />
-              Tu navegador no soporta el elemento de video.
-            </video>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4">
-      <Button 
-        onClick={() => router.push('/home')} 
-        className="self-start mb-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-xl py-2 px-4"
-      >
-        <ArrowLeft className="mr-2 h-6 w-6" />
-        Volver al Inicio
-      </Button>
-      <main className="flex-grow flex items-center justify-center">
-        <Button 
-          onClick={prevStep} 
-          disabled={currentStep === 0}
-          className="bg-purple-500 hover:bg-purple-600 text-white text-4xl py-8 px-6 rounded-full mr-4"
-        >
-          <ArrowLeft className="h-12 w-12" />
-        </Button>
-        <Card className="w-full max-w-6xl bg-white/80 backdrop-blur-md shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center text-gray-900">{tareaEjemplo.nombre}</CardTitle>
-            <p className="text-xl text-center text-gray-700">{tareaEjemplo.descripcion}</p>
-          </CardHeader>
-          <CardContent className="h-[calc(100vh-16rem)]">
-            {renderPasoContent()}
-            <div className="mt-4 text-center">
-              <span className="text-2xl font-bold">
-                Paso {currentStep + 1} de {alumnoEjemplo.numero_pasos}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-        <Button 
-          onClick={nextStep} 
-          disabled={currentStep === alumnoEjemplo.numero_pasos - 1}
-          className="bg-purple-500 hover:bg-purple-600 text-white text-4xl py-8 px-6 rounded-full ml-4"
-        >
-          <ArrowRight className="h-12 w-12" />
-        </Button>
-      </main>
-    </div>
-  )
-}*/
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -154,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
+import confetti from 'canvas-confetti'
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
@@ -183,6 +36,7 @@ type Paso = {
   audio: string | null;
   video: string | null;
   pictograma: string | null;
+  id_tarea: string | null;
 }
 
 export default function TareaPasos() {
@@ -191,6 +45,7 @@ export default function TareaPasos() {
   const [pasos, setPasos] = useState<Paso[]>([])
   const [currentStep, setCurrentStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const [showCompletionPage, setShowCompletionPage] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -250,11 +105,21 @@ export default function TareaPasos() {
     }
   }
 
+
   const nextStep = () => {
-    if (alumno && currentStep < alumno.numero_pasos - 1) {
-      setCurrentStep(currentStep + 1)
+    if (alumno && currentStep < Math.ceil(pasos.length / alumno.numero_pasos) - 1) {
+      // Si hay más pasos disponibles, avanza al siguiente paso.
+      setCurrentStep(currentStep + 1);
+    } else if (
+      alumno &&
+      currentStep === Math.ceil(pasos.length / alumno.numero_pasos) - 1 &&
+      pasos.length <= (currentStep + 1) * alumno.numero_pasos
+    ) {
+      // Si estamos en el último conjunto de pasos y no hay más pasos por mostrar,
+      // muestra la página de finalización.
+      setShowCompletionPage(true);
     }
-  }
+  };
 
   const prevStep = () => {
     if (currentStep > 0) {
@@ -263,38 +128,62 @@ export default function TareaPasos() {
   }
 
   const renderPasoContent = () => {
-    if (!alumno || !pasos[currentStep]) return null
+    if (!alumno || pasos.length === 0) return null
 
-    const paso = pasos[currentStep]
+    const startIndex = currentStep * alumno.numero_pasos
+    const endIndex = Math.min(startIndex + alumno.numero_pasos, pasos.length)
+    const currentPasos = pasos.slice(startIndex, endIndex)
+
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-        <div className="flex flex-col justify-center">
-          {alumno.IU_Texto && paso.texto && (
-            <p className="text-3xl mb-6">{paso.texto}</p>
-          )}
-          {alumno.IU_Audio && paso.audio && (
-            <audio controls className="w-full mb-6">
-              <source src={paso.audio} type="audio/mpeg" />
-              Tu navegador no soporta el elemento de audio.
-            </audio>
-          )}
-          {alumno.IU_Pictograma && paso.pictograma && (
-            <img src={paso.pictograma} alt="Pictograma del paso" className="w-full h-auto object-contain mb-6 rounded-lg" />
-          )}
-        </div>
-        <div className="flex flex-col justify-center">
-          {alumno.IU_Imagen && paso.imagen && (
-            <img src={paso.imagen} alt={`Paso ${currentStep + 1}`} className="w-full h-auto object-contain mb-6 rounded-lg" />
-          )}
-          {alumno.IU_Video && paso.video && (
-            <video controls className="w-full h-auto object-contain rounded-lg">
-              <source src={paso.video} type="video/mp4" />
-              Tu navegador no soporta el elemento de video.
-            </video>
-          )}
-        </div>
+        {currentPasos.map((paso, index) => (
+          <div key={paso.identificador} className="flex flex-col justify-center">
+            {alumno.IU_Texto && paso.texto && (
+              <p className="text-3xl mb-6">{paso.texto}</p>
+            )}
+            {alumno.IU_Audio && paso.audio && (
+              <audio controls className="w-full mb-6">
+                <source src={paso.audio} type="audio/mpeg" />
+                Tu navegador no soporta el elemento de audio.
+              </audio>
+            )}
+            {alumno.IU_Pictograma && paso.pictograma && (
+              <img src={paso.pictograma} alt={`Pictograma del paso ${startIndex + index + 1}`} className="w-full h-auto object-contain mb-6 rounded-lg" />
+            )}
+            {alumno.IU_Imagen && paso.imagen && (
+              <img src={paso.imagen} alt={`Paso ${startIndex + index + 1}`} className="w-full h-auto object-contain mb-6 rounded-lg" />
+            )}
+            {alumno.IU_Video && paso.video && (
+              <video controls className="w-full h-auto object-contain rounded-lg mb-6">
+                <source src={paso.video} type="video/mp4" />
+                Tu navegador no soporta el elemento de video.
+              </video>
+            )}
+          </div>
+        ))}
       </div>
     )
+  }
+
+  const handleCompletion = async () => {
+    if (tarea) {
+      const { error } = await supabase
+        .from('Tarea_Pasos')
+        .update({ completada: true })
+        .eq('identificador', tarea.identificador)
+
+      if (error) {
+        console.error('Error updating tarea:', error)
+        setError('Error al marcar la tarea como completada')
+      } else {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        })
+        setTimeout(() => router.push('/menu-calendario-agenda'), 3000)
+      }
+    }
   }
 
   if (error) {
@@ -305,10 +194,23 @@ export default function TareaPasos() {
     return <div className="h-screen flex items-center justify-center text-2xl">Cargando...</div>
   }
 
+  if (showCompletionPage) {
+    return (
+      <div className="h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex items-center justify-center">
+        <Button
+          onClick={handleCompletion}
+          className="bg-green-500 hover:bg-green-600 text-white text-6xl py-24 px-12 rounded-3xl"
+        >
+          ¡Has completado la tarea!
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4">
       <Button 
-        onClick={() => router.push('/home')} 
+        onClick={() => router.push('/menu-calendario-agenda')} 
         className="self-start mb-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-2xl py-3 px-6"
       >
         <ArrowLeft className="mr-2 h-6 w-6" />
@@ -331,18 +233,19 @@ export default function TareaPasos() {
             {renderPasoContent()}
             <div className="mt-4 text-center">
               <span className="text-3xl font-bold">
-                Paso {currentStep + 1} de {alumno.numero_pasos}
+                Paso {currentStep + 1} de {Math.ceil(pasos.length / alumno.numero_pasos)}
               </span>
             </div>
           </CardContent>
         </Card>
         <Button 
           onClick={nextStep} 
-          disabled={currentStep === alumno.numero_pasos - 1}
+          disabled={currentStep === Math.ceil(pasos.length / alumno.numero_pasos) - 1 && showCompletionPage}
           className="bg-purple-500 hover:bg-purple-600 text-white text-4xl py-12 px-8 rounded-full ml-4"
         >
           <ArrowRight className="h-20 w-20" />
         </Button>
+
       </main>
     </div>
   )

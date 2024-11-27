@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils, Paperclip } from "lucide-react"
 import Link from 'next/link'
+import { useRouter } from 'next/navigation';
 
 // Función que obtiene el nombre del administrador
 const getAdminName = () => {
@@ -14,12 +15,18 @@ const getAdminName = () => {
 export default function AdminDashboard() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null)
   const [adminName, setAdminName] = useState<string>('');
+  const router = useRouter();
 
   useEffect(() => {
     // Obtener el nombre del administrador cuando el componente se monta
     const name = getAdminName();
     setAdminName(name);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminName'); // Eliminar el nombre del administrador del localStorage
+    router.push('/login'); // Redirigir a la página de inicio de sesión
+  };
 
   const menuItems = [
     { 
@@ -70,7 +77,7 @@ export default function AdminDashboard() {
           variant="outline" 
           className="text-lg bg-red-500 hover:bg-red-600 text-white"
           aria-label="Cerrar sesión"
-          onClick={() => window.location.href = '/login'}
+          onClick={handleLogout}
         >
           <UserMinus className="mr-2 h-5 w-5" aria-hidden="true" />
           Cerrar Sesión

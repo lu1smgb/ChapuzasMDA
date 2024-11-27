@@ -130,11 +130,12 @@ export default function TaskList() {
 
   const filteredTasks = tasks.filter(task =>
     task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
-    // Verifica si Alumnos está definido y contiene al menos un alumno
-    (task.Alumno.nombre || '').toLowerCase().includes(filterStudentName.toLowerCase()) &&
+    // Verifica si task.Alumno existe y luego comprueba si su nombre incluye el valor de filtro
+    (task.Alumno ? task.Alumno.nombre.toLowerCase().includes(filterStudentName.toLowerCase()) : false) &&
     (!filterStartDate || task.fecha_inicio >= filterStartDate) &&
     (!filterEndDate || task.fecha_fin <= filterEndDate)
   );
+  
   
 
   return (
@@ -195,55 +196,54 @@ export default function TaskList() {
         <p className="text-center text-red-500">{error}</p>
       ) : (
         <div className="overflow-y-auto border border-gray-200 rounded-md mb-4" style={{ height: "300px" }}>
-          <ul className="divide-y divide-gray-200">
-            {filteredTasks.length > 0 ? (
-              filteredTasks.map((task) => (
-                <li key={task.identificador} className="py-2 px-4 hover:bg-gray-50">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-medium">{task.nombre}</p>
-                      <p className="text-sm text-gray-600">Alumno: {task.Alumno.nombre || 'No asignado'}</p>
-                      <p className="text-sm text-gray-600">
-                        Fechas: {new Date(task.fecha_inicio).toLocaleDateString()} - {new Date(task.fecha_fin).toLocaleDateString()}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Estado: 
-                        {task.completada 
-                          ? "Completada" 
-                          : new Date(task.fecha_fin) < new Date() 
-                            ? "Retrasada" 
-                            : "Pendiente"}
-                      </p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={() => router.push(`./gestionar-tarea?id=${task.identificador}&tabla=${task.tipo}`)}
-                        variant="outline"
-                        size="sm"
-                        className="bg-blue-500 hover:bg-blue-600 text-white"
-                      >
-                        Modificar
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteTask(task)}
-                        variant="outline"
-                        size="sm"
-                        className="bg-red-500 hover:bg-red-600 text-white"
-                      >
-                        Eliminar
-                      </Button>
-                    </div>
+        <ul className="divide-y divide-gray-200">
+          {filteredTasks.length > 0 ? (
+            filteredTasks.map((task) => (
+              <li key={task.identificador} className="py-2 px-4 hover:bg-gray-50">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">{task.nombre}</p>
+                    <p className="text-sm text-gray-600">Alumno: {task.Alumno.nombre || 'No asignado'}</p>
+                    <p className="text-sm text-gray-600">
+                      Fechas: {new Date(task.fecha_inicio).toLocaleString()} - {new Date(task.fecha_fin).toLocaleString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Estado: 
+                      {task.completada 
+                        ? "Completada" 
+                        : new Date(task.fecha_fin) < new Date() 
+                          ? "Retrasada" 
+                          : "Pendiente"}
+                    </p>
                   </div>
-                </li>
-              ))
-            ) : (
-              <li className="py-2 px-4">
-                <p className="text-center text-gray-500">No hay tareas para mostrar.</p>
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={() => router.push(`./gestionarTarea/anad-tarea?id=${task.identificador}&tipo=${task.tipo}`)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      Modificar
+                    </Button>
+                    <Button
+                      onClick={() => handleDeleteTask(task)}
+                      variant="outline"
+                      size="sm"
+                      className="bg-red-500 hover:bg-red-600 text-white"
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
               </li>
-            )}
-          </ul>
-        </div>
-      )}
+            ))
+          ) : (
+            <li className="py-2 px-4">
+              <p className="text-center text-gray-500">No hay tareas para mostrar.</p>
+            </li>
+          )}
+        </ul>
+      </div>)}
 
       {deleteTask && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">

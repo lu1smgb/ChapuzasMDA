@@ -9,12 +9,21 @@ import { ArrowLeft, Lock } from "lucide-react"
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 
+/**
+ * Componente principal para la página de login con contraseña.
+ * Maneja el estado de la contraseña, errores y datos del alumno.
+ */
 export default function LoginContrasena() {
   const [contrasena, setContrasena] = useState('')
   const [error, setError] = useState('')
   const [alumno, setAlumno] = useState<{ identificador: string; nombre: string } | null>(null)
   const router = useRouter()
 
+  /**
+   * useEffect que se ejecuta al montar el componente.
+   * Obtiene el ID del alumno desde localStorage y llama a fetchAlumno.
+   * Si no hay ID de alumno, redirige a la página de lista.
+   */
   useEffect(() => {
     const alumnoId = localStorage.getItem('alumnoId')
     console.log('alumnoId en localStorage:', alumnoId)  // Console log para verificar
@@ -25,28 +34,40 @@ export default function LoginContrasena() {
       router.push('/lista')
     }
   }, [])
-  
+
+  /**
+   * Función asíncrona para obtener los datos del alumno desde la base de datos.
+   * @param identificador - El ID del alumno a buscar.
+   */
   const fetchAlumno = async (identificador: string) => {
     const { data, error } = await supabase
       .from('Alumno')
-      .select('identificador, nombre')
+      .select('*')
       .eq('identificador', identificador)
       .single()
 
     if (error) {
       console.error('Error fetching alumno:', error)
-      router.push('/lista')
-    } else if (data) {
+      setError('No se pudo obtener los datos del alumno.')
+    } else {
       setAlumno(data)
     }
   }
 
-  const handleContrasenaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setContrasena(e.target.value)
+  /**
+   * Manejador para el cambio en el campo de contraseña.
+   * @param event - El evento de cambio del input.
+   */
+  const handleContrasenaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setContrasena(event.target.value)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  /**
+   * Manejador para el envío del formulario.
+   * @param event - El evento de envío del formulario.
+   */
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
     setError('')
 
     if (!contrasena) {
