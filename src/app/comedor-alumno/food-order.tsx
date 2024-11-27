@@ -6,20 +6,20 @@ import Image from 'next/image'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight, FileDown } from 'lucide-react'
-//import { jsPDF } from 'jspdf'
+import { jsPDF } from 'jspdf'
 //import './fonts.css'
 
 // Placeholder data (replace with Supabase fetching in the future)
 const placeholderClassrooms = [
-  { id: '1', name: 'Classroom A', teacher: 'Ms. Johnson', image: '/placeholder.svg?height=200&width=200' },
-  { id: '2', name: 'Classroom B', teacher: 'Mr. Smith', image: '/placeholder.svg?height=200&width=200' },
-  { id: '3', name: 'Classroom C', teacher: 'Mrs. Davis', image: '/placeholder.svg?height=200&width=200' },
+  { id: '1', name: 'Classroom A', teacher: 'Mercedes', image: '/images/comedor/mercedes.png?height=200&width=200' },
+  { id: '2', name: 'Classroom B', teacher: 'Jesús', image: '/images/comedor/jesus.png?height=200&width=200' },
+  { id: '3', name: 'Classroom C', teacher: 'Carlos', image: '/images/comedor/carlos.png?height=200&width=200' },
 ]
 
 const placeholderMenuItems = [
-  { id: '1', name: 'Pizza', description: 'Delicious cheese pizza', image: '/placeholder.svg?height=200&width=200' },
-  { id: '2', name: 'Burger', description: 'Juicy beef burger', image: '/placeholder.svg?height=200&width=200' },
-  { id: '3', name: 'Salad', description: 'Fresh garden salad', image: '/placeholder.svg?height=200&width=200' },
+  { id: '1', name: 'SIN CARNE', description: 'Menú sin carne', image: '/images/comedor/sincarne.png?height=200&width=200' },
+  { id: '2', name: 'TRITURADO', description: 'Triturado', image: '/images/comedor/puré.png?height=200&width=200' },
+  { id: '3', name: 'NARANJA', description: 'Naranja', image: '/images/comedor/naranja.png?height=200&width=200' },
 ]
 
 type Classroom = {
@@ -147,7 +147,7 @@ export default function FoodOrder() {
         const classroom = classrooms[currentIndex]
         return (
           <div className="text-center font-escolar">
-            <h2 className="text-2xl font-bold mb-4">Select Classroom</h2>
+            <h2 className="text-2xl font-bold mb-4">Selecciona aula</h2>
             <Image src={classroom.image} alt={classroom.name} width={200} height={200} className="mx-auto mb-4 rounded-full" />
             <p className="text-4xl font-bold">{classroom.name}</p>
             <p className="text-2xl mt-2">Teacher: {classroom.teacher}</p>
@@ -159,7 +159,7 @@ export default function FoodOrder() {
         const currentQuantity = getCurrentQuantity(menuItem.id)
         return (
           <div className="text-center font-escolar">
-            <h2 className="text-2xl font-bold mb-4">Select Menu Item</h2>
+            <h2 className="text-2xl font-bold mb-4">Selecciona menú</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
                 <Image src={menuItem.image} alt={menuItem.name} width={200} height={200} className="rounded-lg" />
@@ -169,7 +169,7 @@ export default function FoodOrder() {
               {currentQuantity > 0 && (
                 <div className="text-center">
                   <Image src={`/placeholder.svg?height=100&width=100&text=Hand ${currentQuantity}`} alt={`Quantity: ${currentQuantity}`} width={100} height={100} className="mx-auto mb-2" />
-                  <p className="text-2xl font-bold">Quantity: {currentQuantity}</p>
+                  <p className="text-2xl font-bold">Cantidad: {currentQuantity}</p>
                 </div>
               )}
             </div>
@@ -178,7 +178,7 @@ export default function FoodOrder() {
       case 'quantity':
         return (
           <div className="text-center font-escolar">
-            <h2 className="text-2xl font-bold mb-4">Select Quantity</h2>
+            <h2 className="text-2xl font-bold mb-4">Selecciona cantidad</h2>
             <Image src={`/placeholder.svg?height=200&width=200&text=Hand ${quantity}`} alt={`Quantity: ${quantity}`} width={200} height={200} className="mx-auto mb-4" />
             <p className="text-4xl font-bold">{quantity}</p>
           </div>
@@ -194,7 +194,7 @@ export default function FoodOrder() {
           className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-2xl py-3 px-6"
         >
           <ArrowLeft className="mr-2 h-6 w-6" />
-          Back to Home
+          Volver
         </Button>
         {step === 'menu' && (
           <Button
@@ -202,7 +202,7 @@ export default function FoodOrder() {
             className="bg-blue-500 hover:bg-blue-600 text-white text-xl py-2 px-4 rounded-full"
           >
             <FileDown className="mr-2 h-6 w-6" />
-            Finish and Generate PDF
+            Terminar y generar PDF
           </Button>
         )}
       </div>
@@ -215,7 +215,7 @@ export default function FoodOrder() {
         </Button>
         <Card className="w-full max-w-6xl bg-white/80 backdrop-blur-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-4xl font-bold text-center text-gray-900">Food Order System</CardTitle>
+            <CardTitle className="text-4xl font-bold text-center text-gray-900">Menús del comedor</CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(100vh-20rem)] flex flex-col justify-center">
             {renderStepContent()}
