@@ -129,12 +129,14 @@ export default function TaskList() {
   };
 
   const filteredTasks = tasks.filter(task =>
-    task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
-    // Verifica si task.Alumno existe y luego comprueba si su nombre incluye el valor de filtro
-    (task.Alumno ? task.Alumno.nombre.toLowerCase().includes(filterStudentName.toLowerCase()) : false) &&
+    // Verifica si task.nombre existe antes de intentar convertirlo a minúsculas
+    task.nombre && task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
+    // Verifica si task.Alumno y task.Alumno.nombre existen antes de intentar convertirlo a minúsculas
+    (task.Alumno && task.Alumno.nombre && task.Alumno.nombre.toLowerCase().includes(filterStudentName.toLowerCase())) &&
     (!filterStartDate || task.fecha_inicio >= filterStartDate) &&
     (!filterEndDate || task.fecha_fin <= filterEndDate)
   );
+  
   
   
 
