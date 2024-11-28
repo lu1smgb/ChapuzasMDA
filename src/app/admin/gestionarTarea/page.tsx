@@ -16,7 +16,7 @@ interface Alumno {
 }
 
 interface Tarea {
-  identificador: number;
+  identificador: string;
   nombre: string;
   descripcion: string;
   fecha_inicio: string;
@@ -52,7 +52,7 @@ export default function TaskList() {
       if (error) throw error;
   
       return data.map(t => ({
-        identificador: t.identificador,
+        identificador: `${tipo_tabla}_${t.identificador}`,
         nombre: t.nombre,
         descripcion: t.descripcion,
         fecha_inicio: t.fecha_inicio,
