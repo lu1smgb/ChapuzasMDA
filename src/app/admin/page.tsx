@@ -51,10 +51,10 @@ export default function AdminDashboard() {
       color: 'bg-orange-500 hover:bg-orange-600'
     },
     { 
-      title: 'Asignar Tareas', 
-      description: 'Asignar tareas a alumnos', 
+      title: 'Responsables de Comedor y Material', 
+      description: 'Alumnos asignados a las tareas de menú y material de hoy',
       icon: Send, 
-      link: '/admin/asignar-tarea',
+      link: '/admin/observarAsignados',
       color: 'bg-amber-700 hover:bg-amber-800'
     },
     { 

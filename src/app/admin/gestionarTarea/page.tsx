@@ -52,7 +52,7 @@ export default function TaskList() {
       if (error) throw error;
   
       return data.map(t => ({
-        identificador: `${tipo_tabla}_${t.identificador}`,
+        identificador: t.identificador,
         nombre: t.nombre,
         descripcion: t.descripcion,
         fecha_inicio: t.fecha_inicio,
@@ -201,7 +201,7 @@ export default function TaskList() {
         <ul className="divide-y divide-gray-200">
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task) => (
-              <li key={task.identificador} className="py-2 px-4 hover:bg-gray-50">
+              <li key={`${task.tipo}_${task.identificador}`} className="py-2 px-4 hover:bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-medium">{task.nombre}</p>
