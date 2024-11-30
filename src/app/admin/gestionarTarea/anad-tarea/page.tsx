@@ -5,14 +5,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm, useFieldArray } from 'react-hook-form'
 import * as z from 'zod'
 import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { createClient } from '@supabase/supabase-js'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Loader2, Search, Plus, Trash } from 'lucide-react'
+import { ArrowLeft, Loader2, Search, Plus, Trash, Image as ImageIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import StepForm from './StepForm/page'
 import {
@@ -43,6 +43,7 @@ const formSchema = z.object({
   fecha_fin: z.string().nonempty('La fecha de fin es obligatoria'),
   nombre: z.string().min(2, { message: 'El nombre debe tener al menos 2 caracteres.' }),
   descripcion: z.string().optional(),
+  imagen_tarea: z.string().optional(),
   id_alumno: z.string().optional(),
   
   // Campos específicos para tipos de tarea
@@ -83,6 +84,7 @@ export default function FormularioTarea() {
   const [taskId, setTaskId] = useState<string | null | number>(searchParams.get('id'));
   const taskType = searchParams.get('tipo')
   const [stepToDelete, setStepToDelete] = useState<number | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,6 +94,7 @@ export default function FormularioTarea() {
       fecha_fin: '',
       nombre: '',
       descripcion: '',
+      imagen_tarea: '',
       id_alumno: '',
       enlace: '',
       nombres_materiales: '',
@@ -180,7 +183,7 @@ export default function FormularioTarea() {
       if (taskError) throw taskError
 
       if (taskData) {
-        let stepsData = [];
+        let stepsData: any[] = [];
         if (tipo === 'Tarea_Pasos') {
           const { data, error: stepsError } = await supabase
             .from('Pasos')
@@ -201,6 +204,7 @@ export default function FormularioTarea() {
           fecha_fin: taskData.fecha_fin 
             ? new Date(taskData.fecha_fin).toISOString().slice(0, 19)
             : '',
+          imagen_tarea: taskData.imagen_tarea ? taskData.imagen_tarea.toString() : undefined,
           id_alumno: taskData.id_alumno ? taskData.id_alumno.toString() : undefined,
           aula_destino: taskData.aula_destino ? taskData.aula_destino.toString() : undefined,
           id_profesor: taskData.id_profesor ? taskData.id_profesor.toString() : undefined,
@@ -212,6 +216,40 @@ export default function FormularioTarea() {
       setErrorMessage('Error al cargar los datos de la tarea.')
     }
   }
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        setIsLoading(true);
+        // Generar un nombre de archivo único
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `tareas/${fileName}`;
+  
+        // Subir imagen a Supabase Storage
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('ImagenesPrueba')
+          .upload(filePath, file);
+  
+        if (uploadError) throw uploadError;
+  
+        // Obtener la URL pública de la imagen
+        const { data } = supabase.storage
+          .from('ImagenesPrueba')
+          .getPublicUrl(filePath);
+  
+        // Establecer la URL de la imagen en el formulario
+        form.setValue('imagen_tarea', data.publicUrl);
+        setImagePreview(data.publicUrl);
+      } catch (error) {
+        console.error('Error al subir la imagen:', error);
+        setErrorMessage('Error al subir la imagen');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
@@ -225,6 +263,7 @@ export default function FormularioTarea() {
         fecha_fin: new Date(values.fecha_fin).toISOString(),
         nombre: values.nombre,
         descripcion: values.descripcion,
+        imagen_tarea : values.imagen_tarea,
         id_alumno: values.id_alumno ? parseInt(values.id_alumno) : null,
       }
 
@@ -412,6 +451,43 @@ export default function FormularioTarea() {
                 </FormItem>
               )}
             />
+
+<FormField
+            control={form.control}
+            name="imagen_tarea"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Imagen de la Tarea</FormLabel>
+                <div className="flex items-center space-x-4">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="task-image-upload"
+                  />
+                  <label 
+                    htmlFor="task-image-upload" 
+                    className="cursor-pointer flex items-center space-x-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  >
+                    <ImageIcon className="w-5 h-5" />
+                    <span>Subir Imagen</span>
+                  </label>
+                  {imagePreview && (
+                    <img 
+                      src={imagePreview} 
+                      alt="Vista previa" 
+                      className="w-24 h-24 object-cover rounded"
+                    />
+                  )}
+                </div>
+                <FormDescription>
+                  Sube una imagen representativa para la tarea
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
             {/* Selector de Alumno */}
             <FormField
