@@ -20,7 +20,6 @@ interface Alumno {
   nombre: string;
   imagen_perfil: string;
   credencial: string;
-  año_nacimiento: string;
   aula: string;
   tipo_login: string;
   IU_Audio: boolean;
@@ -29,6 +28,7 @@ interface Alumno {
   IU_Pictograma: boolean;
   IU_Texto: boolean;
   numero_pasos: number;
+  numero_imagenes_login : number;
 }
 
 interface LoginImage {
@@ -44,7 +44,6 @@ export default function StudentForm() {
   const [aula, setAula] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState('')
-  const [birthYear, setBirthYear] = useState('')
   const [loginType, setLoginType] = useState('')
   const [IU_Audio, setIU_Audio] = useState(false)
   const [IU_Video, setIU_Video] = useState(false)
@@ -58,7 +57,7 @@ export default function StudentForm() {
   const [success, setSuccess] = useState('')
   const [loginImages, setLoginImages] = useState<LoginImage[]>([])
   const [availableLoginImages, setAvailableLoginImages] = useState<LoginImage[]>([])
-
+  const [numeroImagenesLogin, setNumeroImagenesLogin] = useState(0)
   const router = useRouter()
   const searchParams = useSearchParams()
   const id = searchParams.get('id')
@@ -85,7 +84,6 @@ export default function StudentForm() {
       setPassword(data.credencial);
       setAula(data.aula);
       setImagePreview(data.imagen_perfil);
-      setBirthYear(data.año_nacimiento);
       setLoginType(data.tipo_login);
       setIU_Audio(data.IU_Audio);
       setIU_Video(data.IU_Video);
@@ -93,6 +91,7 @@ export default function StudentForm() {
       setIU_Pictograma(data.IU_Pictograma);
       setIU_Texto(data.IU_Texto);
       setNumeroPasos(data.numero_pasos);
+      setNumeroImagenesLogin(data.numero_imagenes_login || 0);
       if (data.tipo_login === 'IMAGEN') {
         setLoginImages(data.credencial.split(',').map(translateImageName));
       }
@@ -157,13 +156,13 @@ export default function StudentForm() {
     setIsLoading(true)
     setError('')
     setSuccess('')
-    if (!name || !aula || !birthYear || !loginType) {
+    if (!name || !aula || !loginType) {
       setError('Debe llenar todos los campos obligatorios.')
       setIsLoading(false)
       return
     }
 
-    if (loginType === 'IMAGEN' && loginImages.length === 0) {
+    if (loginType === 'IMAGEN' && loginImages.length === 0 && numeroImagenesLogin < 1) {
       setError('Debe seleccionar al menos una imagen para el login.')
       setIsLoading(false)
       return
@@ -195,14 +194,14 @@ export default function StudentForm() {
         credencial: loginType === 'IMAGEN' ? loginImages.map(img => img.name).join(',') : password,
         aula,
         imagen_perfil: imageUrl,
-        año_nacimiento: birthYear,
         tipo_login: loginType,
         IU_Audio,
         IU_Video,
         IU_Imagen,
         IU_Pictograma,
         IU_Texto,
-        numero_pasos: numeroPasos
+        numero_pasos: numeroPasos,
+        numero_imagenes_login : loginType === 'IMAGEN' ? numeroImagenesLogin : null
       };
 
       if (student) {
@@ -316,16 +315,6 @@ export default function StudentForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="birthYear">Año de Nacimiento</Label>
-            <Input
-              id="birthYear"
-              type="date"
-              value={birthYear}
-              onChange={(e) => setBirthYear(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="loginType">Tipo de Login</Label>
             <Select value={loginType} onValueChange={setLoginType}>
               <SelectTrigger>
@@ -349,6 +338,19 @@ export default function StudentForm() {
             />
           </div>
         </div>
+        {loginType === 'IMAGEN' && (
+        <div className="space-y-2">
+          <Label htmlFor="numeroImagenesLogin">Número de Imágenes para Login</Label>
+          <Input
+            id="numeroImagenesLogin"
+            type="number"
+            value={numeroImagenesLogin}
+            onChange={(e) => setNumeroImagenesLogin(parseInt(e.target.value))}
+            min={1}
+            required
+          />
+        </div>
+      )}
         <div className="space-y-2">
           <Label htmlFor="password">Credencial</Label>
           {loginType === 'IMAGEN' ? (
