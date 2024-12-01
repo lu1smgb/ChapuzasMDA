@@ -77,12 +77,9 @@ export default function StepForm({ form, index }: StepFormProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Paso {index + 1}</h3>
-        <Button type="button" variant="ghost" onClick={toggleExpansion}>
-          {expanded ? <ChevronUp /> : <ChevronDown />}
-        </Button>
-      </div>
+      <Button type="button" variant="ghost" onClick={toggleExpansion} className="mb-2">
+        {expanded ? <ChevronUp /> : <ChevronDown />}
+      </Button>
       {expanded && (
         <>
           <FormField

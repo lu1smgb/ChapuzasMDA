@@ -37,37 +37,39 @@ const tiposTarea = [
   { value: 'Tarea_Pasos', label: 'Tarea Pasos' },
 ]
 
-const formSchema = z.object({
-  tipo_tarea: z.string().nonempty('Debe seleccionar un tipo de tarea'),
-  fecha_inicio: z.string().nonempty('La fecha de inicio es obligatoria'),
-  fecha_fin: z.string().nonempty('La fecha de fin es obligatoria'),
-  nombre: z.string().min(2, { message: 'El nombre debe tener al menos 2 caracteres.' }),
-  descripcion: z.string().optional(),
-  imagen_tarea: z.string().optional(),
-  id_alumno: z.string().optional(),
+  const formSchema = z.object({
+    tipo_tarea: z.string(),
+    fecha_inicio: z.string().nonempty('La fecha de inicio es obligatoria'),
+    fecha_fin: z.string().nonempty('La fecha de fin es obligatoria'),
+    nombre: z.string().min(2, {
+      message: 'El nombre debe tener al menos 2 caracteres.',
+    }),
+    descripcion: z.string().optional(),
+    id_alumno: z.string().optional(),
+    // Campos específicos para Tarea_Material
+    nombres_materiales: z.string().optional(),
+    cantidades_materiales: z.string().optional(),
+    aula_destino: z.string().optional(),
+    id_profesor: z.string().optional(),
+    imagen_tarea: z.string().optional(),
+    // Campos para otros tipos de tareas se mantienen
+    enlace: z.string().optional(),
+    pasos: z.array(z.object({
+      texto: z.string().optional(),
+      imagen: z.string().optional(),
+      audio: z.string().optional(),
+      video: z.string().optional(),
+      pictograma: z.string().optional(),
+    })).optional(),
+  }).refine(data => {
+    const inicio = new Date(data.fecha_inicio);
+    const fin = new Date(data.fecha_fin);
+    return fin >= inicio;
+  }, {
+    message: "La fecha de fin debe ser igual o posterior a la fecha de inicio",
+    path: ["fecha_fin"],
+  });
   
-  // Campos específicos para tipos de tarea
-  enlace: z.string().optional(),
-  nombres_materiales: z.string().optional(),
-  cantidades_materiales: z.string().optional(),
-  aula_destino: z.string().optional(),
-  id_profesor: z.string().optional(),
-  
-  pasos: z.array(z.object({
-    texto: z.string().optional(),
-    imagen: z.string().optional(),
-    audio: z.string().optional(),
-    video: z.string().optional(),
-    pictograma: z.string().optional(),
-  })).optional(),
-}).refine(data => {
-  const inicio = new Date(data.fecha_inicio);
-  const fin = new Date(data.fecha_fin);
-  return fin >= inicio;
-}, {
-  message: "La fecha de fin debe ser igual o posterior a la fecha de inicio",
-  path: ["fecha_fin"],
-});
 
 export default function FormularioTarea() {
   const [alumnos, setAlumnos] = useState<{ identificador: string; nombre: string }[]>([])
@@ -192,7 +194,7 @@ export default function FormularioTarea() {
             .order('identificador', { ascending: true })
 
           if (stepsError) throw stepsError
-          stepsData = stepsData || [];
+          stepsData = data || [];
         }
 
         form.reset({
@@ -208,8 +210,13 @@ export default function FormularioTarea() {
           id_alumno: taskData.id_alumno ? taskData.id_alumno.toString() : undefined,
           aula_destino: taskData.aula_destino ? taskData.aula_destino.toString() : undefined,
           id_profesor: taskData.id_profesor ? taskData.id_profesor.toString() : undefined,
-          pasos: stepsData || [],
+          pasos: stepsData,
         })
+
+        // Set image preview if there's an image
+        if (taskData.imagen_tarea) {
+          setImagePreview(taskData.imagen_tarea.toString());
+        }
       }
     } catch (error) {
       console.error('Error al obtener los datos de la tarea:', error)
@@ -250,6 +257,16 @@ export default function FormularioTarea() {
       }
     }
   };
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'imagen_tarea' && value.imagen_tarea) {
+        setImagePreview(value.imagen_tarea);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true)
@@ -298,17 +315,17 @@ export default function FormularioTarea() {
 
       // Manejar pasos para Tarea_Pasos
       if (values.tipo_tarea === 'Tarea_Pasos' && values.pasos && values.pasos.length > 0) {
-        // Eliminar pasos existentes
-        if (newTaskId) {
-          await supabase.from('Pasos').delete().eq('id_tarea', newTaskId);
-        }
-
         // Insertar nuevos pasos
         const stepsWithTaskId = values.pasos.map(step => ({
           ...step,
           id_tarea: newTaskId
         }));
 
+        // Eliminar pasos existentes
+        if (newTaskId) {
+          await supabase.from('Pasos').delete().eq('id_tarea', newTaskId);
+        }
+        
         const { error: stepsError } = await supabase.from('Pasos').insert(stepsWithTaskId);
         if (stepsError) throw stepsError;
       }
