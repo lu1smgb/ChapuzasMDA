@@ -182,8 +182,6 @@ export default function TaskList() {
   );
   
   
-  
-
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full max-w-4xl mx-auto">
       <nav className="mb-4">
