@@ -20,7 +20,6 @@ interface Alumno {
   nombre: string;
   imagen_perfil: string;
   credencial: string;
-  año_nacimiento: string;
   aula: string;
   tipo_login: string;
   IU_Audio: boolean;
@@ -29,6 +28,8 @@ interface Alumno {
   IU_Pictograma: boolean;
   IU_Texto: boolean;
   numero_pasos: number;
+  numero_imagenes_login: number;
+  imagenes_login: string;
 }
 
 interface LoginImage {
@@ -44,7 +45,6 @@ export default function StudentForm() {
   const [aula, setAula] = useState('')
   const [image, setImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState('')
-  const [birthYear, setBirthYear] = useState('')
   const [loginType, setLoginType] = useState('')
   const [IU_Audio, setIU_Audio] = useState(false)
   const [IU_Video, setIU_Video] = useState(false)
@@ -57,8 +57,9 @@ export default function StudentForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loginImages, setLoginImages] = useState<LoginImage[]>([])
+  const [interfaceLoginImages, setInterfaceLoginImages] = useState<LoginImage[]>([])
   const [availableLoginImages, setAvailableLoginImages] = useState<LoginImage[]>([])
-
+  const [numeroImagenesLogin, setNumeroImagenesLogin] = useState(0)
   const router = useRouter()
   const searchParams = useSearchParams()
   const id = searchParams.get('id')
@@ -85,7 +86,6 @@ export default function StudentForm() {
       setPassword(data.credencial);
       setAula(data.aula);
       setImagePreview(data.imagen_perfil);
-      setBirthYear(data.año_nacimiento);
       setLoginType(data.tipo_login);
       setIU_Audio(data.IU_Audio);
       setIU_Video(data.IU_Video);
@@ -93,8 +93,10 @@ export default function StudentForm() {
       setIU_Pictograma(data.IU_Pictograma);
       setIU_Texto(data.IU_Texto);
       setNumeroPasos(data.numero_pasos);
+      setNumeroImagenesLogin(data.numero_imagenes_login || 0);
       if (data.tipo_login === 'IMAGEN') {
         setLoginImages(data.credencial.split(',').map(translateImageName));
+        setInterfaceLoginImages(data.imagenes_login ? data.imagenes_login.split(',').map(translateImageName) : []);
       }
     } catch (error) {
       console.error("Error al obtener el alumno:", error);
@@ -141,15 +143,29 @@ export default function StudentForm() {
     }
   };
 
-  const handleLoginImageSelect = (image: LoginImage) => {
-    setLoginImages(prev => {
-      const exists = prev.some(img => img.name === image.name);
-      if (exists) {
-        return prev.filter(img => img.name !== image.name);
-      } else {
-        return [...prev, image];
-      }
-    });
+  const handleLoginImageSelect = (image: LoginImage, isInterfaceImage: boolean) => {
+    if (isInterfaceImage) {
+      setInterfaceLoginImages(prev => {
+        const exists = prev.some(img => img.name === image.name);
+        if (exists) {
+          return prev.filter(img => img.name !== image.name);
+        } else if (prev.length < numeroImagenesLogin) {
+          return [...prev, image];
+        } else {
+          setError(`No se pueden seleccionar más de ${numeroImagenesLogin} imágenes para la interfaz de login.`);
+          return prev;
+        }
+      });
+    } else {
+      setLoginImages(prev => {
+        const exists = prev.some(img => img.name === image.name);
+        if (exists) {
+          return prev.filter(img => img.name !== image.name);
+        } else {
+          return [...prev, image];
+        }
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,14 +173,20 @@ export default function StudentForm() {
     setIsLoading(true)
     setError('')
     setSuccess('')
-    if (!name || !aula || !birthYear || !loginType) {
+    if (!name || !aula || !loginType) {
       setError('Debe llenar todos los campos obligatorios.')
       setIsLoading(false)
       return
     }
 
     if (loginType === 'IMAGEN' && loginImages.length === 0) {
-      setError('Debe seleccionar al menos una imagen para el login.')
+      setError('Debe seleccionar al menos una imagen para la credencial.')
+      setIsLoading(false)
+      return
+    }
+
+    if (loginType === 'IMAGEN' && interfaceLoginImages.length !== numeroImagenesLogin) {
+      setError(`Debe seleccionar exactamente ${numeroImagenesLogin} imágenes para la interfaz de login.`)
       setIsLoading(false)
       return
     }
@@ -195,14 +217,15 @@ export default function StudentForm() {
         credencial: loginType === 'IMAGEN' ? loginImages.map(img => img.name).join(',') : password,
         aula,
         imagen_perfil: imageUrl,
-        año_nacimiento: birthYear,
         tipo_login: loginType,
         IU_Audio,
         IU_Video,
         IU_Imagen,
         IU_Pictograma,
         IU_Texto,
-        numero_pasos: numeroPasos
+        numero_pasos: numeroPasos,
+        numero_imagenes_login: loginType === 'IMAGEN' ? numeroImagenesLogin : null,
+        imagenes_login: loginType === 'IMAGEN' ? interfaceLoginImages.map(img => img.name).join(',') : null
       };
 
       if (student) {
@@ -316,16 +339,6 @@ export default function StudentForm() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="birthYear">Año de Nacimiento</Label>
-            <Input
-              id="birthYear"
-              type="date"
-              value={birthYear}
-              onChange={(e) => setBirthYear(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="loginType">Tipo de Login</Label>
             <Select value={loginType} onValueChange={setLoginType}>
               <SelectTrigger>
@@ -349,10 +362,24 @@ export default function StudentForm() {
             />
           </div>
         </div>
+        {loginType === 'IMAGEN' && (
+          <div className="space-y-2">
+            <Label htmlFor="numeroImagenesLogin">Número de Imágenes para Login</Label>
+            <Input
+              id="numeroImagenesLogin"
+              type="number"
+              value={numeroImagenesLogin}
+              onChange={(e) => setNumeroImagenesLogin(parseInt(e.target.value))}
+              min={1}
+              required
+            />
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="password">Credencial</Label>
           {loginType === 'IMAGEN' ? (
             <div>
+              <h3 className="font-semibold mb-2">Imágenes para la Credencial</h3>
               <div className="grid grid-cols-3 gap-2 mb-2">
                 {loginImages.map((img, index) => (
                   <div key={index} className="relative">
@@ -363,7 +390,7 @@ export default function StudentForm() {
                     />
                     <button
                       type="button"
-                      onClick={() => handleLoginImageSelect(img)}
+                      onClick={() => handleLoginImageSelect(img, false)}
                       className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
                       aria-label={`Remove ${img.name}`}
                     >
@@ -374,10 +401,44 @@ export default function StudentForm() {
               </div>
               <Select
                 value=""
-                onValueChange={(value) => handleLoginImageSelect(JSON.parse(value))}
+                onValueChange={(value) => handleLoginImageSelect(JSON.parse(value), false)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Añadir imagen de login" />
+                  <SelectValue placeholder="Añadir imagen de credencial" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableLoginImages.map((img, index) => (
+                    <SelectItem key={index} value={JSON.stringify(img)}>{img.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <h3 className="font-semibold mt-4 mb-2">Imágenes para la Interfaz de Login</h3>
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                {interfaceLoginImages.map((img, index) => (
+                  <div key={index} className="relative">
+                    <img
+                      src={img.src}
+                      alt={img.alt}
+                      className="w-full h-20 object-cover rounded"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleLoginImageSelect(img, true)}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                      aria-label={`Remove ${img.name}`}
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <Select
+                value=""
+                onValueChange={(value) => handleLoginImageSelect(JSON.parse(value), true)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Añadir imagen de interfaz de login" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableLoginImages.map((img, index) => (
@@ -448,4 +509,5 @@ export default function StudentForm() {
     </div>
   )
 }
+
 
