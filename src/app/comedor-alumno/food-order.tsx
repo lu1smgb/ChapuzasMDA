@@ -253,7 +253,7 @@ export default function FoodOrder() {
         const totalMenuItems = getTotalMenuItems(classroom.identificador)
         return (
           <div className="text-center font-escolar">
-            <h2 className="text-2xl font-bold mb-4">Selecciona aula</h2>
+            <h2 className="text-4xl font-bold mb-4">Selecciona aula</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
                 <Image src={classroom.imagen_perfil} alt={classroom.aula} width={400} height={400} className="mx-auto mb-4 rounded-full" />
@@ -265,8 +265,8 @@ export default function FoodOrder() {
                   <Image 
                     src={quantityImages[Math.min(totalMenuItems, 5)]}
                     alt={`Total menu items: ${totalMenuItems}`} 
-                    width={100} 
-                    height={100} 
+                    width={200} 
+                    height={200} 
                     className="mx-auto mb-2" 
                   />
                   <p className="text-2xl font-bold">Total: {totalMenuItems}</p>
@@ -289,7 +289,7 @@ export default function FoodOrder() {
         const currentQuantity = selectedClassroom ? getCurrentQuantity(selectedClassroom.identificador, menuItem.id) : 0
         return (
           <div className="text-center font-escolar">
-            <h2 className="text-2xl font-bold mb-4">Selecciona menús</h2>
+            <h2 className="text-4xl font-bold mb-4">Selecciona menús</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
                 <Image src={menuItem.url_imagen} alt={menuItem.nombre} width={400} height={400} className="rounded-lg" />
@@ -313,7 +313,7 @@ export default function FoodOrder() {
       case 'quantity':
         return (
           <div className="text-center font-escolar">
-            <h2 className="text-2xl font-bold mb-4">Selecciona cantidad</h2>
+            <h2 className="text-4xl font-bold mb-4">Selecciona cantidad</h2>
             <Image 
               src={quantityImages[quantity]}
               alt={`Quantity: ${quantity}`} 
@@ -363,15 +363,14 @@ export default function FoodOrder() {
         </Button>
         <Card className="w-full max-w-6xl bg-white/80 backdrop-blur-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-4xl font-bold text-center text-gray-900">Menús de comedor</CardTitle>
           </CardHeader>
           <CardContent className="h-[calc(100vh-20rem)] flex flex-col justify-center">
             {renderStepContent()}
             <Button
               onClick={handleSelect}
-              className="mt-8 bg-green-500 hover:bg-green-600 text-white text-2xl py-4 px-8 rounded-full self-center"
+              className="mt-8 bg-green-500 hover:bg-green-600 text-white text-4xl py-6 px-8 rounded-full self-center"
             >
-              {step === 'quantity' ? 'Aceptar' : 'Seleccionar'}
+              {step === 'quantity' ? '✓ Aceptar' : ' ✓ Seleccionar'}
             </Button>
           </CardContent>
         </Card>
