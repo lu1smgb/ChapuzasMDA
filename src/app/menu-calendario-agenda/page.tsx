@@ -124,7 +124,7 @@ export default function StudentAgenda() {
             }
           break;
         case 'Tarea_Material':
-          router.push('/material');
+          router.push('/tareas/tarea-material');
           break;
         case 'Tarea_Menu':
           router.push('/menu');
