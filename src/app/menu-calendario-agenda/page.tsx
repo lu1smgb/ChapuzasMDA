@@ -14,6 +14,7 @@ type Task = {
   id_estudiante: number
   tipo_tabla: string,
   fecha_inicio: string,
+  fecha_fin: string,
   imagen?:string
 }
 
@@ -46,14 +47,15 @@ export default function StudentAgenda() {
     }
 
     const today = new Date().toISOString().split('T')[0]
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(23, 59, 59, 999);
 
     const { data, error } = await supabase
       .from(nombre_tabla)
-      .select("identificador, fecha_inicio, nombre, id_alumno, completada, imagen_tarea") // Seleccionar los campos necesarios
+      .select("identificador, fecha_inicio, fecha_fin, nombre, id_alumno, completada, imagen_tarea") // Seleccionar los campos necesarios
       .eq('completada', false)
       .eq('id_alumno', userId)
-      .gte('fecha_inicio', today) 
-      .lt('fecha_inicio', today + 'T23:59:59')
       .order('identificador', { ascending: true })
 
     if (error) {
@@ -66,6 +68,7 @@ export default function StudentAgenda() {
         id_estudiante: task.id_alumno,
         tipo_tabla: nombre_tabla,
         fecha_inicio: task.fecha_inicio,
+        fecha_fin: task.fecha_fin,
         imagen: task.imagen_tarea
       }));
     }
@@ -76,6 +79,17 @@ export default function StudentAgenda() {
     const allTasks = await Promise.all(taskTables.map(fetchTasks));
     setTasks(allTasks.flat().filter((task): task is Task => task !== undefined) as Task[]);
   };
+
+  const isTodayInRange = (startDate: string, endDate: string) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return today >= start && today <= end;
+  };
+  
+  const tasksForToday = tasks.filter(task => !task.completada && isTodayInRange(task.fecha_inicio, task.fecha_fin));
+
+  
 
   const markTaskAsComplete = async (task: Task) => { // Marcar la tarea como completada
     const { error } = await supabase
@@ -110,7 +124,7 @@ export default function StudentAgenda() {
             }
           break;
         case 'Tarea_Material':
-          router.push('/material');
+          router.push('/tareas/tarea-material');
           break;
         case 'Tarea_Menu':
           router.push('/menu');
@@ -139,7 +153,7 @@ export default function StudentAgenda() {
           <CardContent className="p-6">
             <h2 className="text-3xl font-bold mb-4 text-purple-600">TAREAS PARA HOY</h2>
             <div className="space-y-4 relative">
-              {tasks.map((task) => (
+              {tasksForToday.map((task) => (
                 <motion.div
                   key={task.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -158,7 +172,7 @@ export default function StudentAgenda() {
                   <h3 className="text-3xl font-semibold text-purple-900">{task.nombre_tarea}</h3>
                 </motion.div>
               ))}
-              {tasks.length === 0 && (
+              {tasksForToday.length === 0 && (
                 <p className="text-center font-bold text-gray-600 text-2xl">¡NO HAY TAREAS!</p>
               )}
             </div>
