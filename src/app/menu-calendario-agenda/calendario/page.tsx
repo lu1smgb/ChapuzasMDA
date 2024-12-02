@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { supabase } from "@/lib/supabase";
 import { motion } from 'framer-motion';
+import { start } from 'repl'
 
 
 type Task = {
@@ -15,6 +16,7 @@ type Task = {
   id_estudiante: number,
   tipo_tabla: string,
   fecha_inicio: string,
+  fecha_fin: string,
   imagen: string
 };
 
@@ -38,9 +40,8 @@ export default function Calendario() {
 
     const { data, error } = await supabase
       .from(nombre_tabla)
-      .select("identificador, fecha_inicio, completada, id_alumno, nombre, descripcion, imagen_tarea") // Seleccionar los campos necesarios
+      .select("identificador, fecha_inicio, fecha_fin, completada, id_alumno, nombre, descripcion, imagen_tarea") // Seleccionar los campos necesarios
       .eq('id_alumno', userId)
-      .order('completada', { ascending: true }) // Ordenar primero por tareas no completadas
       .order('identificador', { ascending: true }); // Luego ordenar por identificador
 
     if (error) {
@@ -54,9 +55,23 @@ export default function Calendario() {
         id_estudiante: task.id_alumno,
         tipo_tabla: nombre_tabla,
         fecha_inicio: task.fecha_inicio,
+        fecha_fin: task.fecha_fin,
         imagen: task.imagen_tarea
       }));
     }
+  };
+
+  const generateDateRange = (startDate: string, endDate: string) => {
+    const dates = [];
+    let currentDate = new Date(startDate);
+    const finalDate = new Date(endDate);
+
+    while (currentDate <= finalDate) {
+      dates.push(currentDate.toISOString().split('T')[0]);
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dates;
   };
 
   const fetchAllTasks = async () => {
@@ -65,15 +80,25 @@ export default function Calendario() {
     setTasks(allTasks.flat().filter((task): task is Task => task !== undefined));
   };
 
-  const groupTasksByDate = (tasks: Task[]) => { // Agrupa las tareas por fecha
-    return tasks.reduce((acc: { [key: string]: Task[] }, task) => {
-      const date = task.fecha_inicio.split('T')[0];
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(task);
-      return acc;
-    }, {});
+  const groupTasksByDate = (tasks: Task[]) => {
+    const groupedTasks: { [key: string]: Task[] } = {};
+
+    tasks.forEach(task => {
+      const dates = generateDateRange(task.fecha_inicio, task.fecha_fin);
+      dates.forEach(date => {
+        if (!groupedTasks[date]) {
+          groupedTasks[date] = [];
+        }
+        groupedTasks[date].push(task);
+      });
+    });
+
+    // Ordenar las tareas dentro de cada fecha
+    Object.keys(groupedTasks).forEach(date => {
+      groupedTasks[date].sort((a, b) => Number(a.completada) - Number(b.completada));
+    });
+
+    return groupedTasks;
   };
 
   const groupedTasks = groupTasksByDate(tasks); 
@@ -135,7 +160,6 @@ export default function Calendario() {
             date.setDate(currentDate.getDate() - 1 + index + (currentPage - 1) * 3);
             const isToday = date.toDateString() === new Date().toDateString();
             const tasksForDate = groupedTasks[date.toISOString().split('T')[0]] || [];
-            const dayOfWeek = currentDate.toLocaleString('default', { weekday: 'long' });
             
             return (
               <Card key={index} className="p-4 bg-white rounded-3xl shadow-lg flex-grow mx-1 h-full">
