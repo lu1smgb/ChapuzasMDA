@@ -256,7 +256,7 @@ export default function FoodOrder() {
             <h2 className="text-2xl font-bold mb-4">Selecciona aula</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
-                <Image src={classroom.imagen_perfil} alt={classroom.aula} width={200} height={200} className="mx-auto mb-4 rounded-full" />
+                <Image src={classroom.imagen_perfil} alt={classroom.aula} width={400} height={400} className="mx-auto mb-4 rounded-full" />
                 <p className="text-4xl font-bold">{classroom.aula}</p>
                 <p className="text-2xl mt-2">Profesor: {classroom.nombre}</p>
               </div>
@@ -292,16 +292,16 @@ export default function FoodOrder() {
             <h2 className="text-2xl font-bold mb-4">Selecciona menús</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
-                <Image src={menuItem.url_imagen} alt={menuItem.nombre} width={200} height={200} className="rounded-lg" />
-                <p className="text-2xl font-bold mt-2">{menuItem.nombre}</p>
+                <Image src={menuItem.url_imagen} alt={menuItem.nombre} width={400} height={400} className="rounded-lg" />
+                <p className="text-4xl font-bold mt-2">{menuItem.nombre}</p>
               </div>
               {currentQuantity > 0 && (
                 <div className="text-center">
                   <Image 
                     src={quantityImages[currentQuantity]}
                     alt={`Quantity: ${currentQuantity}`} 
-                    width={100} 
-                    height={100} 
+                    width={200} 
+                    height={200} 
                     className="mx-auto mb-2" 
                   />
                   <p className="text-2xl font-bold">Cantidad: {currentQuantity}</p>
@@ -317,8 +317,8 @@ export default function FoodOrder() {
             <Image 
               src={quantityImages[quantity]}
               alt={`Quantity: ${quantity}`} 
-              width={200} 
-              height={200} 
+              width={400} 
+              height={400} 
               className="mx-auto mb-4" 
             />
             <p className="text-4xl font-bold">{quantity}</p>
@@ -371,7 +371,7 @@ export default function FoodOrder() {
               onClick={handleSelect}
               className="mt-8 bg-green-500 hover:bg-green-600 text-white text-2xl py-4 px-8 rounded-full self-center"
             >
-              {step === 'quantity' ? 'Confirm Quantity' : 'Select'}
+              {step === 'quantity' ? 'Aceptar' : 'Seleccionar'}
             </Button>
           </CardContent>
         </Card>
