@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, ImageIcon, X } from 'lucide-react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
 
 type ImageOption = {
@@ -15,24 +15,13 @@ type ImageOption = {
   alt: string;
 }
 
-const imageOptions: ImageOption[] = [
-  { name: 'Manzana roja', src: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=300&h=300&fit=crop', alt: 'Manzana roja' },
-  { name: 'Platano amarillo', src: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=300&fit=crop', alt: 'Platano amarillo' },
-  { name: 'Coche rojo', src: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=300&h=300&fit=crop', alt: 'Coche rojo' },
-  { name: 'Perro gracioso', src: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=300&h=300&fit=crop', alt: 'Perro gracioso' },
-  { name: 'Casa de madera', src: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=300&h=300&fit=crop', alt: 'Casa de madera' },
-  { name: 'Arbol en el campo', src: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=300&h=300&fit=crop', alt: 'Arbol en el campo' },
-]
-
 export default function LoginImagen() {
-  const [alumno, setAlumno] = useState<{ identificador: string; nombre: string; credencial: string } | null>(null)
+  const [alumno, setAlumno] = useState<{ identificador: string; nombre: string; credencial: string; imagenes_login: string } | null>(null)
   const [selectedImages, setSelectedImages] = useState<string[]>([])
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [shuffledImages, setShuffledImages] = useState<ImageOption[]>([])
-  const [showAlert, setShowAlert] = useState(false)
-  const [showErrorCross, setShowErrorCross] = useState(false); // Added state for error cross
+  const [showErrorCross, setShowErrorCross] = useState(false)
   const router = useRouter()
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const alumnoId = localStorage.getItem('alumnoId')
@@ -45,14 +34,14 @@ export default function LoginImagen() {
 
   useEffect(() => {
     if (alumno) {
-      setShuffledImages(shuffleArray([...imageOptions]))
+      fetchAndShuffleImages()
     }
   }, [alumno])
 
   const fetchAlumno = async (identificador: string) => {
     const { data, error } = await supabase
       .from('Alumno')
-      .select('identificador, nombre, credencial')
+      .select('identificador, nombre, credencial, imagenes_login')
       .eq('identificador', identificador)
       .single()
 
@@ -62,6 +51,32 @@ export default function LoginImagen() {
     } else if (data) {
       setAlumno(data)
     }
+  }
+
+  const fetchAndShuffleImages = async () => {
+    if (!alumno) return
+
+    const imageNames = alumno.imagenes_login.split(',').map(img => img.trim())
+    const imageOptions: ImageOption[] = await Promise.all(imageNames.map(async (name) => {
+      const { data, error } = await supabase
+        .storage
+        .from('ImagenesPrueba')
+        .createSignedUrl(`login_alumno/${name}`, 3600) // URL válida por 1 hora
+
+      if (error) {
+        console.error('Error fetching image URL:', error)
+        return null
+      }
+
+      return {
+        name: name,
+        src: data.signedUrl,
+        alt: name
+      }
+    }))
+
+    const validImages = imageOptions.filter((img): img is ImageOption => img !== null)
+    setShuffledImages(shuffleArray(validImages))
   }
 
   const shuffleArray = (array: ImageOption[]) => {
@@ -81,7 +96,7 @@ export default function LoginImagen() {
         return [...prev, imageName]
       }
     })
-    setShowErrorCross(false) // Oculta la cruz de error si estaba visible
+    setShowErrorCross(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -92,7 +107,6 @@ export default function LoginImagen() {
     const requiredCredentials = alumno.credencial.split(',').map(cred => cred.trim())
 
     if (selectedImages.length !== requiredCredentials.length) {
-      // No hacemos nada si la secuencia no está completa
       return
     }
 
@@ -113,7 +127,7 @@ export default function LoginImagen() {
 
   const resetSequence = () => {
     setSelectedImages([])
-    setShuffledImages(shuffleArray([...imageOptions]))
+    fetchAndShuffleImages()
   }
 
   const renderImageOptions = () => {
@@ -146,7 +160,7 @@ export default function LoginImagen() {
     return (
       <div className="flex justify-center mt-4 space-x-2">
         {selectedImages.map((imageName, index) => {
-          const image = imageOptions.find(img => img.name === imageName)
+          const image = shuffledImages.find(img => img.name === imageName)
           return (
             <motion.div
               key={index}
@@ -155,7 +169,7 @@ export default function LoginImagen() {
               exit={{ opacity: 0, y: -20 }}
               className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500"
             >
-              <img src={image?.src} alt={image?.alt} className="w-full h-full object-cover" />
+              {image && <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />}
             </motion.div>
           )
         })}
@@ -199,44 +213,6 @@ export default function LoginImagen() {
                         <X 
                           className="text-red-500 w-96 h-96"
                         />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                  <AnimatePresence>
-                    {showAlert && (error || success) && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-                      >
-                        <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-                          <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-3xl font-bold">{error ? '¡Error!' : '¡Éxito!'}</h2>
-                            <Button
-                              onClick={() => {
-                                setShowAlert(false)
-                                setError('')
-                                setSuccess('')
-                              }}
-                              variant="ghost"
-                              className="text-gray-500 hover:text-gray-700"
-                            >
-                              <X className="h-6 w-6" />
-                            </Button>
-                          </div>
-                          <p className={`text-2xl ${error ? 'text-red-600' : 'text-green-600'}`}>
-                            {error || success}
-                          </p>
-                          {error && (
-                            <Button
-                              onClick={resetSequence}
-                              className="mt-6 w-full bg-blue-500 hover:bg-blue-600 text-white text-xl py-3"
-                            >
-                              Intentar de nuevo
-                            </Button>
-                          )}
-                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
