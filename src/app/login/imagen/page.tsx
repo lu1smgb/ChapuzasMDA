@@ -178,7 +178,8 @@ export default function LoginImagen() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col p-4 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
+    
+    <div className="font-escolar min-h-screen flex flex-col p-4 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
       <Link href="/login" passHref>
         <Button variant="outline" className="self-start mb-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-lg py-2 px-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
