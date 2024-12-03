@@ -8,6 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight, FileDown } from 'lucide-react'
 import { jsPDF } from 'jspdf'
 import { createClient } from '@supabase/supabase-js'
+import confetti from 'canvas-confetti'
+import { NotificationModal } from '@/components/ui/NotificationModal'
 
 // Uncomment the following line when using Supabase
 //import { supabase } from '@/lib/supabase-client'
@@ -68,6 +70,7 @@ const quantityImages: string[] = [
   '/images/comedor/10.png?height=100&width=100&text=10',
 ]
 
+
 export default function FoodOrder() {
   const [step, setStep] = useState<'classroom' | 'menu' | 'quantity'>('classroom')
   const [classrooms, setClassrooms] = useState<Classroom[]>([])
@@ -80,6 +83,9 @@ export default function FoodOrder() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showWarningModal, setShowWarningModal] = useState(false)
+  const [actividadCompletada, setActividadCompletada] = useState(false)
 
   useEffect(() => {
     fetchClassrooms()
@@ -203,6 +209,34 @@ export default function FoodOrder() {
     }
   }
 
+  const handleCompletion = async () => {
+    const taskId = localStorage.getItem('tareaId');
+
+    if (!taskId) {
+      console.error('No se encontró el identificador del alumno.');
+      return;
+    }
+        
+    const { error } = await supabase
+      .from('Tarea_Menu')
+      .update({ completada: true })
+      .eq('identificador', taskId)
+        
+    if (error) {
+      console.error('Error updating tarea:', error)
+      setError('Error al marcar la tarea como completada')
+    } else {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+    })
+      setActividadCompletada(true)
+      setShowSuccessModal(true)
+      setTimeout(() => router.push('/menu-calendario-agenda'), 6000)
+    }
+  }
+
   const getCurrentQuantity = (classroomId: string, menuItemId: number) => {
     const classroomOrder = classroomOrders.find(order => order.classroom.identificador === classroomId)
     if (!classroomOrder) return 0
@@ -240,6 +274,11 @@ export default function FoodOrder() {
     })
     
     doc.save('food-order.pdf')
+  }
+
+  const botonTerminar = () => {
+    generatePDF();
+    handleCompletion();
   }
 
   const renderStepContent = () => {
@@ -336,7 +375,7 @@ export default function FoodOrder() {
               setStep('classroom')
               setCurrentIndex(classrooms.findIndex(c => c.identificador === selectedClassroom?.identificador))
             } else {
-              router.push('/home')
+              router.push('/menu-calendario-agenda')
             }
           }} 
           className="bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-2xl py-3 px-6"
@@ -346,7 +385,7 @@ export default function FoodOrder() {
         </Button>
         {step === 'classroom' && (
           <Button
-            onClick={generatePDF}
+            onClick={botonTerminar}
             className="bg-blue-500 hover:bg-blue-600 text-white text-xl py-2 px-4 rounded-full"
           >
             <FileDown className="mr-2 h-6 w-6" />

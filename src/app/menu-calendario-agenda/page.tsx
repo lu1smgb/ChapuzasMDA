@@ -127,7 +127,7 @@ export default function StudentAgenda() {
           router.push('/tareas/tarea-material');
           break;
         case 'Tarea_Menu':
-          router.push('/menu');
+          router.push('/comedor-alumno');
           break;
         case 'Tarea_Pasos':
           router.push('/tareas/tarea-pasos');
