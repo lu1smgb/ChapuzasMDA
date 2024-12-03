@@ -11,10 +11,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * Interfaz de alumno que define los campos necesarios del mismo para esta sección.
+ */
 interface Alumno {
   nombre: string;
 }
 
+/**
+ * Interfaz de tarea que define los campos necesarios del mismo para esta sección.
+ */
 interface Tarea {
   identificador: string;
   nombre: string;
@@ -68,7 +74,7 @@ export default function TaskList() {
     }
   };
   
-    // Obtiene las tareas de la tabla nombre_tabla y les asigna el tipo tipo_tabla que no están asignadas
+    // Obtiene las tareas de la tabla nombre_tabla y les asigna el tipo tipo_tabla que no están asignadas a ningún alumno
     const fetchAndMapUnasignedTasks = async (nombre_tabla: string, tipo_tabla: string): Promise<Tarea[]> => {
       try {
         const { data, error } = await supabase
@@ -95,6 +101,9 @@ export default function TaskList() {
       }
     };
 
+  /**
+   * Recoge todos los tipos de tareas, asignadas y no asignadas y las ordena.
+   */
   const fetchTasks = async () => {
     setIsLoading(true);
     setError(null);
@@ -154,6 +163,9 @@ export default function TaskList() {
     setDeleteTask(task);
   };
 
+  /**
+   * Función para borrar una tarea.
+   */
   const confirmDeleteTask = async () => {
     if (deleteTask) {
       try {
@@ -172,6 +184,9 @@ export default function TaskList() {
     setDeleteTask(null);
   };
 
+  /**
+   * Comprueba las tareas para mostrarlas según los filtros.
+   */
   const filteredTasks = tasks.filter(task =>
     // Verifica si task.nombre existe antes de intentar convertirlo a minúsculas
     task.nombre && task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&

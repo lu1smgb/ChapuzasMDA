@@ -12,12 +12,19 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * Intefaz para alumno que define los campos necesarios a tratar en esta sección.
+ */
 interface Alumno {
   identificador: number;
   nombre: string;
   imagen_perfil: string;
 }
 
+/**
+ * Interfaz para tareas que define los campos necesarios para tratar en esta sección.
+ * Cuenta con un alumno, aquel cuyo identificador coincide con id_alumno.
+ */
 interface Tarea {
   identificador: string;
   nombre: string;
@@ -37,6 +44,9 @@ export default function TareasDelDia() {
     fetchTareasDelDia()
   }, [])
 
+  /**
+   * Función que permite obtener las tareas y de hoy de Menú y de Material que están asignadas.
+   */
   const fetchTareasDelDia = async () => {
     setIsLoading(true)
     setError(null)
