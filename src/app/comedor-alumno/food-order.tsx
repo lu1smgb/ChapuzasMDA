@@ -149,7 +149,7 @@ export default function FoodOrder() {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % menuItems.length)
         break
       case 'quantity':
-        setQuantity((prevQuantity) => Math.min(prevQuantity + 1, 5))
+        setQuantity((prevQuantity) => Math.min(prevQuantity + 1, 10))
         break
     }
   }
@@ -295,14 +295,14 @@ export default function FoodOrder() {
             <h2 className="text-4xl font-bold mb-4">Selecciona aula</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
-                <Image src={classroom.imagen_perfil} alt={classroom.aula} width={400} height={400} className="mx-auto mb-4 rounded-full" />
+                <Image src={classroom.imagen_perfil} alt={classroom.aula} width={200} height={200} className="mx-auto mb-4 rounded-full" />
                 <p className="text-4xl font-bold">{classroom.aula}</p>
                 <p className="text-2xl mt-2">Profesor: {classroom.nombre}</p>
               </div>
               {totalMenuItems > 0 && (
                 <div className="text-center">
                   <Image 
-                    src={quantityImages[Math.min(totalMenuItems, 5)]}
+                    src={quantityImages[Math.min(totalMenuItems, 10)]}
                     alt={`Total menu items: ${totalMenuItems}`} 
                     width={200} 
                     height={200} 
@@ -331,7 +331,7 @@ export default function FoodOrder() {
             <h2 className="text-4xl font-bold mb-4">Selecciona menús</h2>
             <div className="flex items-center justify-center space-x-4">
               <div>
-                <Image src={menuItem.url_imagen} alt={menuItem.nombre} width={400} height={400} className="rounded-lg" />
+                <Image src={menuItem.url_imagen} alt={menuItem.nombre} width={200} height={200} className="rounded-lg" />
                 <p className="text-4xl font-bold mt-2">{menuItem.nombre}</p>
               </div>
               {currentQuantity > 0 && (
@@ -356,8 +356,8 @@ export default function FoodOrder() {
             <Image 
               src={quantityImages[quantity]}
               alt={`Quantity: ${quantity}`} 
-              width={400} 
-              height={400} 
+              width={200} 
+              height={200} 
               className="mx-auto mb-4" 
             />
             <p className="text-4xl font-bold">{quantity}</p>
