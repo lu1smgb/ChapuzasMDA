@@ -19,61 +19,67 @@ type StepFormProps = {
 }
 
 export default function StepForm({ form, index }: StepFormProps) {
-  const [uploading, setUploading] = useState(false)
-  const [expanded, setExpanded] = useState(true)
+  const [uploading, setUploading] = useState(false); // Estado para indicar si se está subiendo un archivo.
+  const [expanded, setExpanded] = useState(true); // Estado para controlar si el formulario está expandido o colapsado.
 
+  // Maneja la subida de archivos a Supabase Storage.
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, field: string) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0]; // Obtiene el archivo seleccionado.
+    if (!file) return; // Si no hay archivo seleccionado, salir de la función.
 
-    setUploading(true)
+    setUploading(true); // Indica que la subida está en proceso.
 
     try {
-      let bucket: string
-      let folder: string
+      let bucket: string; // Nombre del bucket de almacenamiento.
+      let folder: string; // Carpeta dentro del bucket donde se guardará el archivo.
 
+      // Define el bucket y la carpeta según el tipo de archivo.
       switch (field) {
         case 'imagen':
-          bucket = 'ImagenesPrueba'
-          folder = 'img_pasos'
-          break
+          bucket = 'ImagenesPrueba';
+          folder = 'img_pasos';
+          break;
         case 'audio':
-          bucket = 'ImagenesPrueba'
-          folder = 'audio_pasos'
-          break
+          bucket = 'ImagenesPrueba';
+          folder = 'audio_pasos';
+          break;
         case 'video':
-          bucket = 'ImagenesPrueba'
-          folder = 'video_pasos'
-          break
+          bucket = 'ImagenesPrueba';
+          folder = 'video_pasos';
+          break;
         case 'pictograma':
-          bucket = 'ImagenesPrueba'
-          folder = 'picto_pasos'
-          break
+          bucket = 'ImagenesPrueba';
+          folder = 'picto_pasos';
+          break;
         default:
-          throw new Error('Invalid field')
+          throw new Error('Invalid field'); // Error si el campo no es válido.
       }
 
+      // Subida del archivo a la carpeta especificada dentro del bucket.
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(`${folder}/${file.name}`, file)
+        .upload(`${folder}/${file.name}`, file);
 
-      if (error) throw error
+      if (error) throw error; // Lanza error si la subida falla.
 
+      // Obtiene la URL pública del archivo subido.
       const { data: { publicUrl } } = supabase.storage
         .from(bucket)
-        .getPublicUrl(`${folder}/${file.name}`)
+        .getPublicUrl(`${folder}/${file.name}`);
 
-      form.setValue(`pasos.${index}.${field}`, publicUrl)
+      // Actualiza el valor del campo correspondiente en el formulario con la URL pública.
+      form.setValue(`pasos.${index}.${field}`, publicUrl);
     } catch (error) {
-      console.error('Error uploading file:', error)
+      console.error('Error uploading file:', error); // Muestra un error en caso de fallo.
     } finally {
-      setUploading(false)
+      setUploading(false); // Marca el final del proceso de subida.
     }
-  }
+  };
 
+  // Alterna el estado expandido/colapsado del formulario.
   const toggleExpansion = () => {
-    setExpanded(!expanded)
-  }
+    setExpanded(!expanded);
+  };
 
   return (
     <div className="space-y-4">
