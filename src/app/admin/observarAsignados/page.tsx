@@ -54,6 +54,7 @@ export default function TareasDelDia() {
         `)
         .gte('fecha_inicio', `${today}T00:00:00`)
         .lt('fecha_inicio', `${today}T23:59:59`)
+        .not('id_alumno', 'is', null)
 
       if (errorComedor) throw errorComedor
 
@@ -68,6 +69,8 @@ export default function TareasDelDia() {
         `)
         .gte('fecha_inicio', `${today}T00:00:00`)
         .lt('fecha_inicio', `${today}T23:59:59`)
+        .not('id_alumno', 'is', null)
+
 
       if (errorMaterial) throw errorMaterial
 
