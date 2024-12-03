@@ -132,17 +132,17 @@ export default function MaterialesParaClase() {
   }
 
   const cantidadImagenes: { [key: number]: string } = {
-    1: '/images/uno.png',
-    2: '/images/dos.png',
-    3: '/images/tres.png',
-    4: '/images/cuatro.png',
-    5: '/images/cinco.png',
-    6: '/images/seis.png',
-    7: '/images/siete.png',
-    8: '/images/ocho.png',
-    9: '/images/nueve.png',
-    10: '/images/diez.png',
-  };
+    1: '/images/comedor/1.png',
+    2: '/images/comedor/2.png',
+    3: '/images/comedor/3.png',
+    4: '/images/comedor/4.png',
+    5: '/images/comedor/5.png',
+    6: '/images/comedor/6.png',
+    7: '/images/comedor/7.png',
+    8: '/images/comedor/8.png',
+    9: '/images/comedor/9.png',
+    10: '/images/comedor/10.png'
+  }
 
 return (
     <div className="font-escolar min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4 flex flex-col">
