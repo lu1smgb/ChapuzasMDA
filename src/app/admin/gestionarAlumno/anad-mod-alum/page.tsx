@@ -121,12 +121,10 @@ export default function StudentForm() {
   };
 
   const translateImageName = (filename: string): LoginImage => {
-    const name = filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
-    const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
     return {
-      name: capitalizedName,
+      name: filename,
       src: `${supabaseUrl}/storage/v1/object/public/ImagenesPrueba/login_alumno/${filename}`,
-      alt: capitalizedName
+      alt: filename
     };
   };
 
@@ -408,7 +406,7 @@ export default function StudentForm() {
                 </SelectTrigger>
                 <SelectContent>
                   {availableLoginImages.map((img, index) => (
-                    <SelectItem key={index} value={JSON.stringify(img)}>{img.name}</SelectItem>
+                    <SelectItem key={index} value={JSON.stringify(img)}>{img.name.replace(/\.[^/.]+$/, "")}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -442,7 +440,7 @@ export default function StudentForm() {
                 </SelectTrigger>
                 <SelectContent>
                   {availableLoginImages.map((img, index) => (
-                    <SelectItem key={index} value={JSON.stringify(img)}>{img.name}</SelectItem>
+                    <SelectItem key={index} value={JSON.stringify(img)}>{img.name.replace(/\.[^/.]+$/, "")}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -509,5 +507,7 @@ export default function StudentForm() {
     </div>
   )
 }
+
+
 
 
