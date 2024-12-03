@@ -23,93 +23,102 @@ interface Profesor {
 }
 
 export default function TeacherForm() {
-  const [teacher, setTeacher] = useState<Profesor | null>(null)
-  const [name, setName] = useState('')
-  const [password, setPassword] = useState('')
-  const [aula, setAula] = useState('')
-  const [image, setImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  // Estados para manejar los datos del formulario y su comportamiento.
+  const [teacher, setTeacher] = useState<Profesor | null>(null); // Almacena los datos del profesor si se está editando uno existente.
+  const [name, setName] = useState(''); // Nombre del profesor.
+  const [password, setPassword] = useState(''); // Credencial o contraseña del profesor.
+  const [aula, setAula] = useState(''); // Aula asignada al profesor.
+  const [image, setImage] = useState<File | null>(null); // Archivo de imagen seleccionado.
+  const [imagePreview, setImagePreview] = useState(''); // URL de previsualización de la imagen seleccionada.
+  const [showPassword, setShowPassword] = useState(false); // Controla si mostrar u ocultar la contraseña.
+  const [isLoading, setIsLoading] = useState(false); // Indica si se está procesando el envío del formulario.
+  const [error, setError] = useState(''); // Almacena los mensajes de error.
+  const [success, setSuccess] = useState(''); // Almacena los mensajes de éxito.
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const id = searchParams.get('id')
+  const router = useRouter(); // Para manejar la navegación.
+  const searchParams = useSearchParams(); // Para obtener los parámetros de búsqueda de la URL.
+  const id = searchParams.get('id'); // Obtiene el ID del profesor si se está editando.
 
+  // Efecto que se ejecuta al cargar el componente o si cambia el ID en los parámetros de la URL.
   useEffect(() => {
     if (id) {
-      fetchTeacher(parseInt(id));
+      fetchTeacher(parseInt(id)); // Llama a la función para obtener los datos del profesor a editar.
     }
   }, [id]);
 
+  // Obtiene los datos del profesor desde Supabase según su ID.
   const fetchTeacher = async (id: number) => {
     try {
       const { data, error } = await supabase
         .from("Profesor")
         .select("*")
         .eq('identificador', id)
-        .single();
+        .single(); // Obtiene un solo registro.
 
       if (error) throw error;
 
-      setTeacher(data);
-      setName(data.nombre);
-      setPassword(data.credencial);
-      setAula(data.aula);
-      setImagePreview(data.imagen_perfil);
+      setTeacher(data); // Guarda los datos del profesor en el estado.
+      setName(data.nombre); // Establece el nombre del profesor en el formulario.
+      setPassword(data.credencial); // Establece la credencial del profesor en el formulario.
+      setAula(data.aula); // Establece el aula del profesor en el formulario.
+      setImagePreview(data.imagen_perfil); // Establece la imagen actual del profesor.
     } catch (error) {
-      console.error("Error al obtener el profesor:", error);
-      setError('Error al cargar los datos del profesor.');
+      console.error("Error al obtener el profesor:", error); // Muestra el error en consola.
+      setError('Error al cargar los datos del profesor.'); // Muestra un mensaje de error.
     }
   };
 
+  // Maneja el cambio del archivo de imagen seleccionado.
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]; // Obtiene el archivo seleccionado.
     if (file) {
-      const fileType = file.type;
+      const fileType = file.type; // Verifica el tipo de archivo.
       if (fileType === 'image/jpeg' || fileType === 'image/png' || fileType === 'image/jpg') {
-        setImage(file);
-        setImagePreview(URL.createObjectURL(file));
+        setImage(file); // Guarda el archivo en el estado.
+        setImagePreview(URL.createObjectURL(file)); // Genera una URL para previsualizar la imagen.
       } else {
-        setError('Por favor, seleccione una imagen en formato JPG, JPEG o PNG.');
+        setError('Por favor, seleccione una imagen en formato JPG, JPEG o PNG.'); // Muestra un error si el formato es incorrecto.
       }
     }
   };
 
+  // Maneja el envío del formulario, ya sea para crear o actualizar un profesor.
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true)
-    setError('')
-    setSuccess('')
-    if (!name || !password || !aula) {
-      setError('Debe llenar todos los campos obligatorios.')
-      setIsLoading(false)
-      return
-    }
-    
-    try {
-      let imageUrl = teacher?.imagen_perfil || '';
+    e.preventDefault(); // Previene el comportamiento predeterminado del formulario.
+    setIsLoading(true); // Activa el estado de carga.
+    setError(''); // Limpia cualquier mensaje de error previo.
+    setSuccess(''); // Limpia cualquier mensaje de éxito previo.
 
+    // Verifica que todos los campos requeridos estén completos.
+    if (!name || !password || !aula) {
+      setError('Debe llenar todos los campos obligatorios.');
+      setIsLoading(false); // Desactiva el estado de carga.
+      return;
+    }
+
+    try {
+      let imageUrl = teacher?.imagen_perfil || ''; // Usa la imagen existente si no se seleccionó una nueva.
+
+      // Si se seleccionó una nueva imagen, la sube al almacenamiento.
       if (image) {
-        const fileExt = image.name.split('.').pop()
-        const fileName = `${Math.random()}.${fileExt}`
-        const filePath = `profesores/${fileName}`
-        
+        const fileExt = image.name.split('.').pop(); // Obtiene la extensión del archivo.
+        const fileName = `${Math.random()}.${fileExt}`; // Genera un nombre único para el archivo.
+        const filePath = `profesores/${fileName}`; // Define la ruta de almacenamiento.
+
         const { error: uploadError } = await supabase.storage
           .from('ImagenesPrueba')
-          .upload(filePath, image);
+          .upload(filePath, image); // Sube el archivo a Supabase.
 
         if (uploadError) throw uploadError;
 
         const { data: { publicUrl } } = supabase.storage
           .from('ImagenesPrueba')
-          .getPublicUrl(filePath)
+          .getPublicUrl(filePath); // Obtiene la URL pública de la imagen.
 
-        imageUrl = publicUrl;
+        imageUrl = publicUrl; // Actualiza la URL de la imagen.
       }
 
+      // Si se está editando un profesor, actualiza sus datos.
       if (teacher) {
         const { error } = await supabase
           .from('Profesor')
@@ -117,12 +126,15 @@ export default function TeacherForm() {
             nombre: name,
             credencial: password,
             aula,
-            imagen_perfil: imageUrl
+            imagen_perfil: imageUrl,
           })
           .eq('identificador', teacher.identificador);
+
         if (error) throw error;
-        setSuccess('Profesor modificado correctamente.');
+
+        setSuccess('Profesor modificado correctamente.'); // Muestra un mensaje de éxito.
       } else {
+        // Si no hay un profesor existente, crea uno nuevo.
         const { error } = await supabase
           .from("Profesor")
           .insert({
@@ -131,19 +143,24 @@ export default function TeacherForm() {
             aula: aula,
             imagen_perfil: imageUrl,
           });
+
         if (error) throw error;
-        setSuccess('Profesor añadido correctamente.');
+
+        setSuccess('Profesor añadido correctamente.'); // Muestra un mensaje de éxito.
       }
+
+      // Redirige a la página principal después de 2 segundos.
       setTimeout(() => {
         router.push('.');
       }, 2000);
     } catch (error) {
-      console.error("Error al guardar el profesor:", error);
-      setError('Error al guardar el profesor. Por favor, inténtelo de nuevo.');
+      console.error("Error al guardar el profesor:", error); // Muestra el error en consola.
+      setError('Error al guardar el profesor. Por favor, inténtelo de nuevo.'); // Muestra un mensaje de error.
     } finally {
-      setIsLoading(false)
+      setIsLoading(false); // Desactiva el estado de carga.
     }
   };
+
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full max-w-4xl mx-auto">

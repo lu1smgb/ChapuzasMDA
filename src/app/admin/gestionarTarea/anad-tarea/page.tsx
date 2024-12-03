@@ -30,64 +30,68 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Tipos de tarea disponibles para selección en el formulario
 const tiposTarea = [
   { value: 'Tarea_Juego', label: 'Tarea Juego' },
   { value: 'Tarea_Menu', label: 'Tarea Menú' },
   { value: 'Tarea_Material', label: 'Tarea Material' },
   { value: 'Tarea_Pasos', label: 'Tarea Pasos' },
-]
+];
 
-  const formSchema = z.object({
-    tipo_tarea: z.string(),
-    fecha_inicio: z.string().nonempty('La fecha de inicio es obligatoria'),
-    fecha_fin: z.string().nonempty('La fecha de fin es obligatoria'),
-    nombre: z.string().min(2, {
-      message: 'El nombre debe tener al menos 2 caracteres.',
-    }),
-    descripcion: z.string().optional(),
-    id_alumno: z.string().optional(),
-    // Campos específicos para Tarea_Material
-    nombres_materiales: z.string().optional(),
-    cantidades_materiales: z.string().optional(),
-    aula_destino: z.string().optional(),
-    id_profesor: z.string().optional(),
-    imagen_tarea: z.string().optional(),
-    // Campos para otros tipos de tareas se mantienen
-    enlace: z.string().optional(),
-    pasos: z.array(z.object({
-      texto: z.string().optional(),
-      imagen: z.string().optional(),
-      audio: z.string().optional(),
-      video: z.string().optional(),
-      pictograma: z.string().optional(),
-    })).optional(),
-  }).refine(data => {
-    const inicio = new Date(data.fecha_inicio);
-    const fin = new Date(data.fecha_fin);
-    return fin >= inicio;
-  }, {
-    message: "La fecha de fin debe ser igual o posterior a la fecha de inicio",
-    path: ["fecha_fin"],
-  });
-  
+// Esquema de validación del formulario utilizando Zod
+const formSchema = z.object({
+  tipo_tarea: z.string(), // Campo obligatorio que especifica el tipo de tarea
+  fecha_inicio: z.string().nonempty('La fecha de inicio es obligatoria'), // Validación: la fecha de inicio no puede estar vacía
+  fecha_fin: z.string().nonempty('La fecha de fin es obligatoria'), // Validación: la fecha de fin no puede estar vacía
+  nombre: z.string().min(2, { 
+    message: 'El nombre debe tener al menos 2 caracteres.' 
+  }), // El nombre debe tener al menos 2 caracteres
+  descripcion: z.string().optional(), // Descripción opcional de la tarea
+  id_alumno: z.string().optional(), // ID del alumno asociado (opcional)
+  // Campos específicos para tareas de tipo "Material"
+  nombres_materiales: z.string().optional(),
+  cantidades_materiales: z.string().optional(),
+  aula_destino: z.string().optional(),
+  id_profesor: z.string().optional(),
+  imagen_tarea: z.string().optional(), // Imagen asociada a la tarea (opcional)
+  // Campos para otros tipos de tareas
+  enlace: z.string().optional(), // Enlace (opcional)
+  pasos: z.array(z.object({
+    texto: z.string().optional(), // Texto de un paso (opcional)
+    imagen: z.string().optional(), // Imagen asociada al paso
+    audio: z.string().optional(), // Archivo de audio asociado al paso
+    video: z.string().optional(), // Video asociado al paso
+    pictograma: z.string().optional(), // Pictograma opcional
+  })).optional(),
+}).refine(data => {
+  // Validación personalizada: la fecha de fin debe ser igual o posterior a la de inicio
+  const inicio = new Date(data.fecha_inicio);
+  const fin = new Date(data.fecha_fin);
+  return fin >= inicio;
+}, {
+  message: "La fecha de fin debe ser igual o posterior a la fecha de inicio",
+  path: ["fecha_fin"], // Campo al que se aplicará el error
+});
 
 export default function FormularioTarea() {
-  const [alumnos, setAlumnos] = useState<{ identificador: string; nombre: string }[]>([])
-  const [profesores, setProfesores] = useState<{ identificador: string; nombre: string }[]>([])
-  const [filteredAlumnos, setFilteredAlumnos] = useState<{ identificador: string; nombre: string }[]>([])
-  const [filteredProfesores, setFilteredProfesores] = useState<{ identificador: string; nombre: string }[]>([])
-  const [alumnoSearch, setAlumnoSearch] = useState('')
-  const [profesorSearch, setProfesorSearch] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [taskId, setTaskId] = useState<string | null | number>(searchParams.get('id'));
-  const taskType = searchParams.get('tipo')
-  const [stepToDelete, setStepToDelete] = useState<number | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  // Estados para manejar datos de alumnos, profesores, y otros valores del formulario
+  const [alumnos, setAlumnos] = useState<{ identificador: string; nombre: string }[]>([]);
+  const [profesores, setProfesores] = useState<{ identificador: string; nombre: string }[]>([]);
+  const [filteredAlumnos, setFilteredAlumnos] = useState<{ identificador: string; nombre: string }[]>([]);
+  const [filteredProfesores, setFilteredProfesores] = useState<{ identificador: string; nombre: string }[]>([]);
+  const [alumnoSearch, setAlumnoSearch] = useState(''); // Filtro de búsqueda para alumnos
+  const [profesorSearch, setProfesorSearch] = useState(''); // Filtro de búsqueda para profesores
+  const [isLoading, setIsLoading] = useState(false); // Indicador de carga
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Mensaje de éxito
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mensaje de error
+  const router = useRouter(); // Para redireccionar entre páginas
+  const searchParams = useSearchParams(); // Para obtener parámetros de la URL
+  const [taskId, setTaskId] = useState<string | null | number>(searchParams.get('id')); // ID de la tarea actual
+  const taskType = searchParams.get('tipo'); // Tipo de tarea actual
+  const [stepToDelete, setStepToDelete] = useState<number | null>(null); // Paso a eliminar
+  const [imagePreview, setImagePreview] = useState<string | null>(null); // Vista previa de la imagen
 
+  // Configuración del formulario con react-hook-form y validación con Zod
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -105,124 +109,129 @@ export default function FormularioTarea() {
       id_profesor: '',
       pasos: [],
     },
-  })
+  });
 
+  // Manejo dinámico de campos (en este caso, pasos) dentro del formulario
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "pasos",
+    name: "pasos", // Nombre del campo en el esquema
   });
 
   useEffect(() => {
-    fetchAlumnos()
-    fetchProfesores()
+    // Carga inicial de datos al montar el componente
+    fetchAlumnos(); // Obtener lista de alumnos
+    fetchProfesores(); // Obtener lista de profesores
     if (searchParams.get('id') && taskType) {
-      fetchTaskData(searchParams.get('id')!, taskType);
+      fetchTaskData(searchParams.get('id')!, taskType); // Obtener datos de una tarea específica si hay un ID en la URL
     }
   }, [taskType, searchParams]);
 
   useEffect(() => {
+    // Actualiza la lista de alumnos filtrados según el término de búsqueda
     setFilteredAlumnos(
       alumnos.filter(alumno =>
         alumno.nombre.toLowerCase().includes(alumnoSearch.toLowerCase())
       )
-    )
-  }, [alumnos, alumnoSearch])
+    );
+  }, [alumnos, alumnoSearch]);
 
   useEffect(() => {
+    // Actualiza la lista de profesores filtrados según el término de búsqueda
     setFilteredProfesores(
       profesores.filter(profesor =>
-        // Verifica si profesor.nombre existe antes de intentar convertirlo a minúsculas
+        // Asegura que el nombre del profesor exista antes de manipularlo
         profesor.nombre && profesor.nombre.toLowerCase().includes(profesorSearch.toLowerCase())
       )
     );
   }, [profesores, profesorSearch]);
-  
 
-  const fetchAlumnos = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('Alumno')
-        .select('identificador, nombre')
 
-      if (error) throw error
+  // Función para obtener alumnos
+const fetchAlumnos = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('Alumno')
+      .select('identificador, nombre');
 
-      setAlumnos(data || [])
-    } catch (error) {
-      console.error('Error al obtener los alumnos:', error)
-      setErrorMessage('Error al cargar la lista de alumnos.')
-    }
+    if (error) throw error;
+
+    setAlumnos(data || []);
+  } catch (error) {
+    console.error('Error al obtener los alumnos:', error);
+    setErrorMessage('Error al cargar la lista de alumnos.');
+  }
+};
+
+// Función para obtener profesores
+const fetchProfesores = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('Profesor')
+      .select('identificador, nombre');
+
+    if (error) throw error;
+
+    setProfesores(data || []);
+  } catch (error) {
+    console.error('Error al obtener los profesores:', error);
+    setErrorMessage('Error al cargar la lista de profesores.');
+  }
+};
+
+// Función para obtener datos de una tarea específica
+const fetchTaskData = async (id: string | null, tipo: string) => {
+  if (!id) {
+    console.error('ID de tarea no proporcionado');
+    setErrorMessage('Error al cargar los datos de la tarea: ID no proporcionado');
+    return;
   }
 
-  const fetchProfesores = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('Profesor')
-        .select('identificador, nombre')
+  try {
+    const { data: taskData, error: taskError } = await supabase
+      .from(tipo)
+      .select('*')
+      .eq('identificador', id)
+      .single();
 
-      if (error) throw error
+    if (taskError) throw taskError;
 
-      setProfesores(data || [])
-    } catch (error) {
-      console.error('Error al obtener los profesores:', error)
-      setErrorMessage('Error al cargar la lista de profesores.')
-    }
-  }
-
-  const fetchTaskData = async (id: string | null, tipo: string) => {
-    if (id === null) {
-      console.error('ID de tarea no proporcionado');
-      setErrorMessage('Error al cargar los datos de la tarea: ID no proporcionado');
-      return;
-    }
-
-    try {
-      const { data: taskData, error: taskError } = await supabase
-        .from(tipo)
+    let stepsData: any[] = [];
+    if (tipo === 'Tarea_Pasos') {
+      const { data, error: stepsError } = await supabase
+        .from('Pasos')
         .select('*')
-        .eq('identificador', id)
-        .single()
+        .eq('id_tarea', id)
+        .order('identificador', { ascending: true });
 
-      if (taskError) throw taskError
-
-      if (taskData) {
-        let stepsData: any[] = [];
-        if (tipo === 'Tarea_Pasos') {
-          const { data, error: stepsError } = await supabase
-            .from('Pasos')
-            .select('*')
-            .eq('id_tarea', id)
-            .order('identificador', { ascending: true })
-
-          if (stepsError) throw stepsError
-          stepsData = data || [];
-        }
-
-        form.reset({
-          ...taskData,
-          tipo_tarea: tipo,
-          fecha_inicio: taskData.fecha_inicio 
-            ? new Date(taskData.fecha_inicio).toISOString().slice(0, 19)
-            : '',
-          fecha_fin: taskData.fecha_fin 
-            ? new Date(taskData.fecha_fin).toISOString().slice(0, 19)
-            : '',
-          imagen_tarea: taskData.imagen_tarea ? taskData.imagen_tarea.toString() : undefined,
-          id_alumno: taskData.id_alumno ? taskData.id_alumno.toString() : undefined,
-          aula_destino: taskData.aula_destino ? taskData.aula_destino.toString() : undefined,
-          id_profesor: taskData.id_profesor ? taskData.id_profesor.toString() : undefined,
-          pasos: stepsData,
-        })
-
-        // Set image preview if there's an image
-        if (taskData.imagen_tarea) {
-          setImagePreview(taskData.imagen_tarea.toString());
-        }
-      }
-    } catch (error) {
-      console.error('Error al obtener los datos de la tarea:', error)
-      setErrorMessage('Error al cargar los datos de la tarea.')
+      if (stepsError) throw stepsError;
+      stepsData = data || [];
     }
+
+    form.reset({
+      ...taskData,
+      tipo_tarea: tipo,
+      fecha_inicio: taskData?.fecha_inicio 
+        ? new Date(taskData.fecha_inicio).toISOString().slice(0, 19)
+        : '',
+      fecha_fin: taskData?.fecha_fin 
+        ? new Date(taskData.fecha_fin).toISOString().slice(0, 19)
+        : '',
+      imagen_tarea: taskData?.imagen_tarea || undefined,
+      id_alumno: taskData?.id_alumno?.toString() || undefined,
+      aula_destino: taskData?.aula_destino?.toString() || undefined,
+      id_profesor: taskData?.id_profesor?.toString() || undefined,
+      pasos: stepsData,
+    });
+
+    // Configurar vista previa de imagen si existe
+    if (taskData?.imagen_tarea) {
+      setImagePreview(taskData.imagen_tarea.toString());
+    }
+  } catch (error) {
+    console.error('Error al obtener los datos de la tarea:', error);
+    setErrorMessage('Error al cargar los datos de la tarea.');
   }
+};
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
