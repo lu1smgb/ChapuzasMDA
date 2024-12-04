@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 
+// Tipo usado en la lista de alumnos
 interface Alumno {
   identificador: number;
   nombre: string;
@@ -16,17 +17,24 @@ interface Alumno {
 
 export default function Profesor() {
 
+  // Nombre del profesor
   const [nombreProfesor, setNombreProfesor] = useState<string | null>('');
+  // Aula del profesor
   const [aula, setAula] = useState<string | null>('');
+  // Lista de alumnos
   const [alumnos, setAlumnos] = useState<Alumno[]>([]);
+
+  // Objeto necesario para la navegacion en la pagina
   const router = useRouter();
 
+  // Funcion llamada cuando se cierra sesion
   const handleLogout = () => {
     console.log('LOGOUT')
     localStorage.removeItem('profName'); // Eliminar el nombre del profesor del localStorage
     router.push('/login'); // Redirigir a la página de inicio de sesión
   };
 
+  // Obtiene el nombre del profesor en base a las cookies del navegador 
   const getNombreProfesor = () => {
     return localStorage.getItem('profName') || '';
   }
@@ -51,6 +59,7 @@ export default function Profesor() {
 
   }
 
+  // Obtiene los datos de los alumnos del aula correspondiente y los muestra en la interfaz
   const mostrarAlumnos = async () => {
     const _nombre = getNombreProfesor();
     let _aula = '';
@@ -78,13 +87,14 @@ export default function Profesor() {
     }
   }
 
-  // Obtiene el nombre del profesor para mostrarlo en la pagina
+  // Obtiene y muestra los datos necesarios
   useEffect(() => {
     setNombreProfesor(getNombreProfesor());
     mostrarAula();
     mostrarAlumnos();
   }, []);
 
+  // Maquetado de la interfaz
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100">
       <div className="min-h-screen p-6 flex flex-col">
