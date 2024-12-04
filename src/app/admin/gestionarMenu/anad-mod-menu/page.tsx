@@ -13,6 +13,13 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * Este código implementa un formulario para añadir o modificar menús.
+ *
+ * - La interfaz `Menu` define la estructura de un menú con `id`, `nombre` y `url_imagen`.
+ * - El componente `MenuForm` gestiona los datos del menú, la previsualización de imágenes, y el envío al servidor.
+ */
+
 interface Menu {
   id: number;
   nombre: string;
@@ -20,24 +27,27 @@ interface Menu {
 }
 
 export default function MenuForm() {
-  const [menu, setMenu] = useState<Menu | null>(null)
-  const [name, setName] = useState('')
-  const [image, setImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [menu, setMenu] = useState<Menu | null>(null); // Almacena los datos del menú actual
+  const [name, setName] = useState(''); // Almacena el nombre del menú ingresado
+  const [image, setImage] = useState<File | null>(null); // Archivo de imagen seleccionado
+  const [imagePreview, setImagePreview] = useState(''); // URL de previsualización de la imagen
+  const [isLoading, setIsLoading] = useState(false); // Estado de carga al guardar el menú
+  const [error, setError] = useState(''); // Almacena mensajes de error
+  const [success, setSuccess] = useState(''); // Almacena mensajes de éxito
 
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const id = searchParams.get('id')
+  const router = useRouter(); // Permite la navegación
+  const searchParams = useSearchParams(); // Obtiene parámetros de la URL
+  const id = searchParams.get('id'); // ID del menú si se está editando
 
   useEffect(() => {
     if (id) {
-      fetchMenu(parseInt(id));
+      fetchMenu(parseInt(id)); // Carga el menú si existe un ID en la URL
     }
   }, [id]);
 
+  /**
+   * Obtiene los datos de un menú específico desde la base de datos.
+   */
   const fetchMenu = async (id: number) => {
     try {
       const { data, error } = await supabase
@@ -48,47 +58,55 @@ export default function MenuForm() {
 
       if (error) throw error;
 
-      setMenu(data);
-      setName(data.nombre);
-      setImagePreview(data.url_imagen);
+      setMenu(data); // Asigna los datos del menú al estado
+      setName(data.nombre); // Establece el nombre en el formulario
+      setImagePreview(data.url_imagen); // Muestra la imagen actual del menú
     } catch (error) {
       console.error("Error al obtener el menú:", error);
       setError('Error al cargar los datos del menú.');
     }
   };
 
+  /**
+   * Maneja la selección de archivos y valida el formato de la imagen.
+   */
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const fileType = file.type;
       if (fileType === 'image/jpeg' || fileType === 'image/png' || fileType === 'image/jpg') {
-        setImage(file);
-        setImagePreview(URL.createObjectURL(file));
+        setImage(file); // Almacena el archivo de imagen
+        setImagePreview(URL.createObjectURL(file)); // Genera una URL temporal para previsualización
       } else {
         setError('Por favor, seleccione una imagen en formato JPG, JPEG o PNG.');
       }
     }
   };
 
+  /**
+   * Envía los datos del formulario para añadir o modificar un menú.
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true)
-    setError('')
-    setSuccess('')
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
     if (!name) {
-      setError('Debe llenar el nombre del menú.')
-      setIsLoading(false)
-      return
+      setError('Debe llenar el nombre del menú.');
+      setIsLoading(false);
+      return;
     }
-    
+
     try {
-      let imageUrl = menu?.url_imagen || '';
+      let imageUrl = menu?.url_imagen || ''; // URL de la imagen actual o vacía
 
       if (image) {
-        const fileExt = image.name.split('.').pop()
-        const fileName = `${Math.random()}.${fileExt}`
-        const filePath = `menus/${fileName}`
-        
+        // Sube la imagen al almacenamiento y obtiene su URL pública
+        const fileExt = image.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `menus/${fileName}`;
+
         const { error: uploadError } = await supabase.storage
           .from('ImagenesPrueba')
           .upload(filePath, image);
@@ -97,12 +115,13 @@ export default function MenuForm() {
 
         const { data: { publicUrl } } = supabase.storage
           .from('ImagenesPrueba')
-          .getPublicUrl(filePath)
+          .getPublicUrl(filePath);
 
-        imageUrl = publicUrl;
+        imageUrl = publicUrl; // Asigna la URL pública al menú
       }
 
       if (menu) {
+        // Actualiza un menú existente
         const { error } = await supabase
           .from('Menu')
           .update({
@@ -110,28 +129,33 @@ export default function MenuForm() {
             url_imagen: imageUrl
           })
           .eq('id', menu.id);
+
         if (error) throw error;
         setSuccess('Menú modificado correctamente.');
       } else {
+        // Crea un nuevo menú
         const { error } = await supabase
           .from("Menu")
           .insert({
             nombre: name,
             url_imagen: imageUrl,
           });
+
         if (error) throw error;
         setSuccess('Menú añadido correctamente.');
       }
+
       setTimeout(() => {
-        router.push('.');
+        router.push('.'); // Navega de vuelta a la lista de menús
       }, 2000);
     } catch (error) {
       console.error("Error al guardar el menú:", error);
       setError('Error al guardar el menú. Por favor, inténtelo de nuevo.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   };
+
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full max-w-4xl mx-auto">

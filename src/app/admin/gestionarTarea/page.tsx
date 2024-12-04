@@ -11,12 +11,18 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+/**
+ * Interfaz de alumno que define los campos necesarios del mismo para esta sección.
+ */
 interface Alumno {
   nombre: string;
 }
 
+/**
+ * Interfaz de tarea que define los campos necesarios del mismo para esta sección.
+ */
 interface Tarea {
-  identificador: number;
+  identificador: string;
   nombre: string;
   descripcion: string;
   fecha_inicio: string;
@@ -68,7 +74,36 @@ export default function TaskList() {
     }
   };
   
+    // Obtiene las tareas de la tabla nombre_tabla y les asigna el tipo tipo_tabla que no están asignadas a ningún alumno
+    const fetchAndMapUnasignedTasks = async (nombre_tabla: string, tipo_tabla: string): Promise<Tarea[]> => {
+      try {
+        const { data, error } = await supabase
+          .from(nombre_tabla)
+          .select("identificador, nombre, descripcion, fecha_inicio, fecha_fin, id_alumno, completada")
+          .is('id_alumno', null);
+    
+        if (error) throw error;
+    
+        return data.map(t => ({
+          identificador: t.identificador,
+          nombre: t.nombre,
+          descripcion: t.descripcion,
+          fecha_inicio: t.fecha_inicio,
+          fecha_fin: t.fecha_fin,
+          id_alumno: t.id_alumno,
+          completada: t.completada,
+          tipo: tipo_tabla, // Asignar tipo según la tabla
+          Alumno:{nombre: 'No asignado'}, 
+        }));
+      } catch (error) {
+        console.error(`Error al obtener tareas de ${nombre_tabla}:`, error);
+        return [];
+      }
+    };
 
+  /**
+   * Recoge todos los tipos de tareas, asignadas y no asignadas y las ordena.
+   */
   const fetchTasks = async () => {
     setIsLoading(true);
     setError(null);
@@ -76,25 +111,43 @@ export default function TaskList() {
       const today = new Date().toISOString().split('T')[0];
       let allTasks: Tarea[] = [];
 
-      const [tareasJuego, tareasMenu, tareasMaterial, tareasPasos] = await Promise.all([
+      const [tareasJuego, tareasMenu, tareasMaterial, tareasPasos, 
+        tareasJuegoNoAsignadas, tareasMenuNoAsignadas, tareasMaterialNoAsignadas, tareasPasosNoAsignadas] = await Promise.all([
         fetchAndMapTasks("Tarea_Juego", "Tarea_Juego"),
         fetchAndMapTasks("Tarea_Menu", "Tarea_Menu"),
         fetchAndMapTasks("Tarea_Material", "Tarea_Material"),
-        fetchAndMapTasks("Tarea_Pasos", "Tarea_Pasos")
+        fetchAndMapTasks("Tarea_Pasos", "Tarea_Pasos"),
+        fetchAndMapUnasignedTasks("Tarea_Juego", "Tarea_Juego"),
+        fetchAndMapUnasignedTasks("Tarea_Menu", "Tarea_Menu"),
+        fetchAndMapUnasignedTasks("Tarea_Material", "Tarea_Material"),
+        fetchAndMapUnasignedTasks("Tarea_Pasos", "Tarea_Pasos")
       ]);
 
-      allTasks = [...tareasJuego, ...tareasMaterial, ...tareasMenu, ...tareasPasos]
+      allTasks = [
+        ...tareasJuego, ...tareasMaterial, ...tareasMenu, ...tareasPasos,
+        ...tareasJuegoNoAsignadas, ...tareasMaterialNoAsignadas, ...tareasMenuNoAsignadas, ...tareasPasosNoAsignadas
+      ]
 
       console.log("Todas las tareas combinadas:", allTasks);
 
       // Ordenar tareas
       const orderedTasks = allTasks.sort((a, b) => {
+        // 1. Priorizar tareas no asignadas (id_alumno es null)
+        if (a.id_alumno === null && b.id_alumno !== null) return -1;
+        if (a.id_alumno !== null && b.id_alumno === null) return 1;
+      
+        // 2. Priorizar tareas no completadas
         if (!a.completada && b.completada) return -1;
         if (a.completada && !b.completada) return 1;
-        if (new Date(a.fecha_fin) > new Date(today) && new Date(b.fecha_fin) <= new Date(today)) return -1;
-        if (new Date(a.fecha_fin) <= new Date(today) && new Date(b.fecha_fin) > new Date(today)) return 1;
+      
+        // 3. Priorizar tareas con fecha de finalización en el futuro
+        const today = new Date();
+        if (new Date(a.fecha_fin) > today && new Date(b.fecha_fin) <= today) return -1;
+        if (new Date(a.fecha_fin) <= today && new Date(b.fecha_fin) > today) return 1;
+      
+        // 4. Si son iguales según los criterios anteriores, no cambiar el orden
         return 0;
-      });
+      });      
 
       setTasks(orderedTasks);
       console.log("Tareas ordenadas y establecidas en el estado:", orderedTasks);
@@ -110,6 +163,9 @@ export default function TaskList() {
     setDeleteTask(task);
   };
 
+  /**
+   * Función para borrar una tarea.
+   */
   const confirmDeleteTask = async () => {
     if (deleteTask) {
       try {
@@ -128,16 +184,19 @@ export default function TaskList() {
     setDeleteTask(null);
   };
 
+  /**
+   * Comprueba las tareas para mostrarlas según los filtros.
+   */
   const filteredTasks = tasks.filter(task =>
-    task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
-    // Verifica si task.Alumno existe y luego comprueba si su nombre incluye el valor de filtro
-    (task.Alumno ? task.Alumno.nombre.toLowerCase().includes(filterStudentName.toLowerCase()) : false) &&
+    // Verifica si task.nombre existe antes de intentar convertirlo a minúsculas
+    task.nombre && task.nombre.toLowerCase().includes(filterTaskName.toLowerCase()) &&
+    // Verifica si task.Alumno y task.Alumno.nombre existen antes de intentar convertirlo a minúsculas
+    (task.Alumno && task.Alumno.nombre && task.Alumno.nombre.toLowerCase().includes(filterStudentName.toLowerCase())) &&
     (!filterStartDate || task.fecha_inicio >= filterStartDate) &&
     (!filterEndDate || task.fecha_fin <= filterEndDate)
   );
   
   
-
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full max-w-4xl mx-auto">
       <nav className="mb-4">
@@ -199,7 +258,7 @@ export default function TaskList() {
         <ul className="divide-y divide-gray-200">
           {filteredTasks.length > 0 ? (
             filteredTasks.map((task) => (
-              <li key={task.identificador} className="py-2 px-4 hover:bg-gray-50">
+              <li key={`${task.tipo}_${task.identificador}`} className="py-2 px-4 hover:bg-gray-50">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="font-medium">{task.nombre}</p>

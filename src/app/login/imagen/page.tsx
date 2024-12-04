@@ -4,40 +4,24 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, ImageIcon } from 'lucide-react'
+import { ArrowLeft, ImageIcon, X } from 'lucide-react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
-import { motion } from 'framer-motion'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { motion, AnimatePresence } from 'framer-motion'
 
-
-  /*
-  * Tipo de dato para las opciones de imagen.
-  */
 type ImageOption = {
   name: string;
   src: string;
   alt: string;
 }
 
-
-const imageOptions: ImageOption[] = [
-  { name: 'Manzana roja', src: 'https://images.unsplash.com/photo-1568702846914-96b305d2aaeb?w=300&h=300&fit=crop', alt: 'Manzana roja' },
-  { name: 'Platano amarillo', src: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=300&fit=crop', alt: 'Platano amarillo' },
-  { name: 'Coche rojo', src: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=300&h=300&fit=crop', alt: 'Coche rojo' },
-  { name: 'Perro gracioso', src: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=300&h=300&fit=crop', alt: 'Perro gracioso' },
-  { name: 'Casa de madera', src: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=300&h=300&fit=crop', alt: 'Casa de madera' },
-  { name: 'Arbol en el campo', src: 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=300&h=300&fit=crop', alt: 'Arbol en el campo' },
-]
-
-  /*
-  * Componente principal para la página de login con imagen.
-  */
 export default function LoginImagen() {
-  const [alumno, setAlumno] = useState<{ identificador: string; nombre: string; credencial: string } | null>(null)
+  const [alumno, setAlumno] = useState<{ identificador: string; nombre: string; credencial: string; imagenes_login: string } | null>(null)
   const [selectedImages, setSelectedImages] = useState<string[]>([])
-  const [error, setError] = useState('')
   const [shuffledImages, setShuffledImages] = useState<ImageOption[]>([])
+  const [showErrorCross, setShowErrorCross] = useState(false)
   const router = useRouter()
+  const supabase = createClientComponentClient()
 
   useEffect(() => {
     const alumnoId = localStorage.getItem('alumnoId')
@@ -50,18 +34,14 @@ export default function LoginImagen() {
 
   useEffect(() => {
     if (alumno) {
-      setShuffledImages(shuffleArray([...imageOptions]))
+      fetchAndShuffleImages()
     }
   }, [alumno])
 
-  /*
-    * Función asíncrona para obtener los datos del alumno desde la base de datos.
-    * @param identificador - El ID del
-  */
   const fetchAlumno = async (identificador: string) => {
     const { data, error } = await supabase
       .from('Alumno')
-      .select('identificador, nombre, credencial')
+      .select('identificador, nombre, credencial, imagenes_login')
       .eq('identificador', identificador)
       .single()
 
@@ -73,10 +53,32 @@ export default function LoginImagen() {
     }
   }
 
-  /*
-    * Función para mezclar aleatoriamente un array.
-    * @param array - El array a mez
-  */
+  const fetchAndShuffleImages = async () => {
+    if (!alumno) return
+
+    const imageNames = alumno.imagenes_login.split(',').map(img => img.trim())
+    const imageOptions: ImageOption[] = await Promise.all(imageNames.map(async (name) => {
+      const { data, error } = await supabase
+        .storage
+        .from('ImagenesPrueba')
+        .createSignedUrl(`login_alumno/${name}`, 3600) // URL válida por 1 hora
+
+      if (error) {
+        console.error('Error fetching image URL:', error)
+        return null
+      }
+
+      return {
+        name: name,
+        src: data.signedUrl,
+        alt: name
+      }
+    }))
+
+    const validImages = imageOptions.filter((img): img is ImageOption => img !== null)
+    setShuffledImages(shuffleArray(validImages))
+  }
+
   const shuffleArray = (array: ImageOption[]) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -85,10 +87,6 @@ export default function LoginImagen() {
     return array;
   }
 
-  /*
-    * Manejador para seleccionar o deseleccionar una imagen.
-    * @param imageName - El nombre de la imagen a seleccionar o des
-  */
   const handleImageSelect = (imageName: string) => {
     setSelectedImages(prev => {
       const index = prev.indexOf(imageName)
@@ -98,25 +96,17 @@ export default function LoginImagen() {
         return [...prev, imageName]
       }
     })
+    setShowErrorCross(false)
   }
 
-  /*
-    * Manejador para el envío del formulario.
-    * @param e - El evento de envío del formulario.
-  */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
 
-    if (!alumno) {
-      setError('No se ha seleccionado un alumno')
-      return
-    }
+    if (!alumno) return
 
     const requiredCredentials = alumno.credencial.split(',').map(cred => cred.trim())
 
     if (selectedImages.length !== requiredCredentials.length) {
-      setError('Número incorrecto de imágenes selecccionadas')
       return
     }
 
@@ -127,15 +117,19 @@ export default function LoginImagen() {
       localStorage.setItem('nombreUsuario', alumno.nombre)
       router.push('/menu-calendario-agenda')
     } else {
-      setError('Secuencia de imágenes incorrecta. Inténtalo de nuevo.')
-      setSelectedImages([])
-      setShuffledImages(shuffleArray([...imageOptions]))
+      setShowErrorCross(true)
+      setTimeout(() => {
+        setShowErrorCross(false)
+        resetSequence()
+      }, 1500)
     }
   }
 
-  /*
-    * Función para renderizar las opciones de imágenes.
-  */
+  const resetSequence = () => {
+    setSelectedImages([])
+    fetchAndShuffleImages()
+  }
+
   const renderImageOptions = () => {
     return (
       <div className="grid grid-cols-3 gap-4">
@@ -162,8 +156,30 @@ export default function LoginImagen() {
     )
   }
 
+  const renderSelectedImagesPreview = () => {
+    return (
+      <div className="flex justify-center mt-4 space-x-2">
+        {selectedImages.map((imageName, index) => {
+          const image = shuffledImages.find(img => img.name === imageName)
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500"
+            >
+              {image && <img src={image.src} alt={image.alt} className="w-full h-full object-cover" />}
+            </motion.div>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
-    <div className="h-screen flex flex-col p-4 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
+    
+    <div className="font-escolar min-h-screen flex flex-col p-4 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100">
       <Link href="/login" passHref>
         <Button variant="outline" className="self-start mb-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-lg py-2 px-4">
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -173,38 +189,47 @@ export default function LoginImagen() {
       <main className="flex-grow flex items-center justify-center">
         <Card className="w-full max-w-4xl bg-white/80 backdrop-blur-md shadow-lg">
           <CardHeader>
-            <CardTitle className="text-3xl font-bold text-center text-gray-900">Login con Imagen</CardTitle>
+            <CardTitle className="text-4xl font-bold text-center text-gray-900">Login con Imagen</CardTitle>
           </CardHeader>
           <CardContent>
             {alumno ? (
               <>
-                <p className="text-xl text-center mb-4">
+                <p className="text-2xl text-center mb-4">
                   Bienvenido, <strong>{alumno.nombre}</strong>
                 </p>
-                <p className="text-lg text-center mb-6">
+                <p className="text-xl text-center mb-6">
                   Selecciona las imágenes correctas en el orden adecuado para iniciar sesión
                 </p>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   {renderImageOptions()}
-                  {error && (
-                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 my-4" role="alert">
-                      <p className="text-xl font-bold">Error</p>
-                      <p className="text-lg">{error}</p>
-                    </div>
-                  )}
+                  {renderSelectedImagesPreview()}
+                  <AnimatePresence>
+                    {showErrorCross && (
+                      <motion.div 
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.5 }}
+                        className="fixed inset-0 flex items-center justify-center z-50"
+                      >
+                        <X 
+                          className="text-red-500 w-96 h-96"
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                   <Button 
                     type="submit" 
-                    className="w-full bg-green-500 hover:bg-green-600 text-white text-xl py-4"
-                    disabled={selectedImages.length === 0}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white text-2xl py-6"
+                    disabled={alumno && selectedImages.length !== alumno.credencial.split(',').length}
                   >
-                    <ImageIcon className="mr-2 h-6 w-6" />
+                    <ImageIcon className="mr-2 h-8 w-8" />
                     Iniciar Sesión
                   </Button>
                 </form>
               </>
             ) : (
-              <p className="text-center text-red-500 text-xl">
-                {error || 'Cargando...'}
+              <p className="text-center text-red-500 text-2xl">
+                Cargando...
               </p>
             )}
           </CardContent>
@@ -213,4 +238,3 @@ export default function LoginImagen() {
     </div>
   )
 }
-

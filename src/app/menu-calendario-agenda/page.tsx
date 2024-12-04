@@ -4,11 +4,8 @@ import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, Calendar, CheckCircle, TrophyIcon } from 'lucide-react'
 import { supabase } from "@/lib/supabase"
 import { motion, AnimatePresence } from 'framer-motion'
-import confetti from 'canvas-confetti'
-import { get } from 'http'
 
 type Task = {
   id: number
@@ -16,13 +13,22 @@ type Task = {
   completada: boolean
   id_estudiante: number
   tipo_tabla: string,
-  fecha_inicio: string
+  fecha_inicio: string,
+  fecha_fin: string,
+  imagen?:string
+}
+
+
+const defaultImages = {
+  'Tarea_Juego': '/images/videojuego.png',
+  'Tarea_Material': '/images/materialescolar.png',
+  'Tarea_Menu': '/images/menu.png',
+  'Tarea_Pasos': '/images/instrucciones.png',
 }
 
 export default function StudentAgenda() {
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
-  const [showNotification, setShowNotification] = useState(false)
  
 
   useEffect(() => { // Obtiene las tareas de la tabla nombre_tabla y les asigna el tipo tipo_tabla
@@ -41,14 +47,15 @@ export default function StudentAgenda() {
     }
 
     const today = new Date().toISOString().split('T')[0]
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(23, 59, 59, 999);
 
     const { data, error } = await supabase
       .from(nombre_tabla)
-      .select("identificador, fecha_inicio, nombre, id_alumno, completada") // Seleccionar los campos necesarios
+      .select("identificador, fecha_inicio, fecha_fin, nombre, id_alumno, completada, imagen_tarea") // Seleccionar los campos necesarios
       .eq('completada', false)
       .eq('id_alumno', userId)
-      .gte('fecha_inicio', today) 
-      .lt('fecha_inicio', today + 'T23:59:59')
       .order('identificador', { ascending: true })
 
     if (error) {
@@ -60,7 +67,9 @@ export default function StudentAgenda() {
         completada: task.completada,
         id_estudiante: task.id_alumno,
         tipo_tabla: nombre_tabla,
-        fecha_inicio: task.fecha_inicio
+        fecha_inicio: task.fecha_inicio,
+        fecha_fin: task.fecha_fin,
+        imagen: task.imagen_tarea
       }));
     }
   }
@@ -71,19 +80,54 @@ export default function StudentAgenda() {
     setTasks(allTasks.flat().filter((task): task is Task => task !== undefined) as Task[]);
   };
 
+  const isTodayInRange = (startDate: string, endDate: string) => {
+    const today = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return today >= start && today <= end;
+  };
+  
+  const tasksForToday = tasks.filter(task => !task.completada && isTodayInRange(task.fecha_inicio, task.fecha_fin));
 
-  const handleTaskClick = (task: Task) => {
+  
+
+  const markTaskAsComplete = async (task: Task) => { // Marcar la tarea como completada
+    const { error } = await supabase
+      .from(task.tipo_tabla)
+      .update({ completada: true })
+      .eq('identificador', task.id);
+  
+    if (error) {
+      console.error('Error updating task:', error);
+    } else {
+      setTasks(tasks.filter(t => t.id !== task.id)); // Eliminar la tarea de la lista
+    }
+  };
+
+
+  const handleTaskClick = async (task: Task) => {
     localStorage.setItem('tareaId', task.id.toString());
     console.log(task.id);
       switch(task.tipo_tabla) {
         case 'Tarea_Juego':
-          router.push('/juego');
+            const { data, error } = await supabase
+            .from('Tarea_Juego')
+            .select('enlace')
+            .eq('identificador', task.id)
+            .single();
+
+            if (error) {
+            console.error('Error fetching external link:', error);
+            } else if (data && data.enlace) {
+            window.open(data.enlace, '_blank'); // Abrir el enlace en una nueva pestaña
+            await markTaskAsComplete(task); // Marcar la tarea como completada
+            }
           break;
         case 'Tarea_Material':
-          router.push('/material');
+          router.push('/tareas/tarea-material');
           break;
         case 'Tarea_Menu':
-          router.push('/menu');
+          router.push('/comedor-alumno');
           break;
         case 'Tarea_Pasos':
           router.push('/tareas/tarea-pasos');
@@ -98,141 +142,53 @@ export default function StudentAgenda() {
       <div className="flex justify-end mb-10">
         <Button
           onClick={() => router.push('/login')} 
-          className="bg-red-500 hover:bg-red-600 text-white hover:text-black text-lg py-3 px-6 h-20 flex items-center justify-center"
+          className="bg-red-500 hover:bg-red-600 text-white hover:text-black font-bold text-2xl py-3 px-6 h-20 flex items-center justify-center"
         >
-          <ArrowLeft className="mr-1 h-10 w-10" /> CERRAR SESIÓN
+          <img src="/images/cerrar.png" className="mr-1 h-16 w-16" /> CERRAR
         </Button>
       </div>
-      <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">MI AGENDA</h1>
+      <h1 className="text-4xl font-bold text-center text-blue-600 mb-6">MI AGENDA</h1>
       <div className="flex flex-col md:flex-row gap-8 flex-grow">
         <Card className="flex-grow md:w-2/3 bg-white rounded-3xl shadow-lg overflow-hidden relative">
           <CardContent className="p-6">
             <h2 className="text-3xl font-bold mb-4 text-purple-600">TAREAS PARA HOY</h2>
             <div className="space-y-4 relative">
-              {tasks.map((task) => (
+              {tasksForToday.map((task) => (
                 <motion.div
                   key={task.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  className="bg-purple-300 p-10 rounded-xl flex items-center justify-between cursor-pointer hover:bg-purple-400 transition-colors"
+                  className="bg-purple-300 p-6 rounded-xl flex items-center cursor-pointer hover:bg-purple-400 transition-colors"
                   onClick={() => handleTaskClick(task)}
                 >
+                  <div className="w-20 h-20 mr-6 relative flex-shrink-0">
+                    <img
+                      src={task.imagen|| defaultImages[task.tipo_tabla as keyof typeof defaultImages]}
+                      alt={task.nombre_tarea}
+                      className="rounded-lg"
+                    />
+                  </div>
                   <h3 className="text-3xl font-semibold text-purple-900">{task.nombre_tarea}</h3>
                 </motion.div>
               ))}
-              {tasks.length === 0 && (
+              {tasksForToday.length === 0 && (
                 <p className="text-center font-bold text-gray-600 text-2xl">¡NO HAY TAREAS!</p>
               )}
             </div>
           </CardContent>
         </Card>
         <Card className="md:w-1/6 bg-white rounded-3xl shadow-lg flex">
-          <Button
+            <Button
             onClick={() => router.push('/menu-calendario-agenda/calendario')}
             className="w-full h-full flex flex-col items-center justify-center p-6 bg-green-500 hover:bg-green-600 text-white rounded-2xl text-center"
-          >
-            <Calendar className="w-5 h-5 mb-2" />
-            <h2 className="text-xl md:text-2xl font-bold text-center">CALENDARIO</h2>
-          </Button>
+            >
+            <img src="/images/calendario.png" className="w-17 h-17 mb-2" />
+            <h2 className="text-2xl font-bold text-center">CALENDARIO</h2>
+            </Button>
         </Card>
       </div>
     </div>
   )
 }
 
-
-/*
-
- const markTaskAsComplete = async (taskId: number, tipo_tabla: string) => { // Marcar tarea completada
-    const { error } = await supabase
-      .from(tipo_tabla)
-      .update({ completada: true }) // Marcar la tarea como completada
-      .eq('identificador', taskId)
-
-    if (error) {
-      console.error('Error updating task:', error)
-    } else {
-      setTasks(tasks.filter(task => task.id !== taskId)) // Eliminar la tarea de la lista
-      //showCelebration()
-    }
-  }
-
-  const showCelebration = () => {
-    setShowNotification(true)
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    })
-    setTimeout(() => setShowNotification(false), 8000)
-  }
-
-  return (
-    <div className="font-escolar min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4 flex flex-col">
-      <div className="flex justify-end mb-10">
-        <Button
-          onClick={() => router.push('/login')} 
-          className="bg-red-500 hover:bg-red-600 text-white hover:text-black text-lg py-3 px-6 h-20 flex items-center justify-center"
-        >
-          <ArrowLeft className="mr-1 h-10 w-10" /> CERRAR SESIÓN
-        </Button>
-      </div>
-      <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">MI AGENDA</h1>
-      <div className="flex flex-col md:flex-row gap-8 flex-grow">
-      <Card className="flex-grow md:w-2/3 bg-white rounded-3xl shadow-lg overflow-hidden relative">
-        <CardContent className="p-6">
-        <h2 className="text-3xl font-bold mb-4 text-purple-600">TAREAS PARA HOY</h2>
-        <div className="space-y-4 relative">
-          {tasks.map((task) => (
-          <motion.div
-            key={task.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="bg-purple-200 p-4 rounded-xl flex items-center justify-between"
-          >
-            <div>
-            <h3 className="text-3xl font-semibold text-purple-800">{task.nombre_tarea}</h3>
-            </div>
-            <Button
-            onClick={() => markTaskAsComplete(task.id, task.tipo_tabla)}
-            className="bg-green-500 hover:bg-green-600 text-white rounded-full p-12"
-            >
-            <CheckCircle className="h-12 w-12" />
-            </Button>
-          </motion.div>
-          ))}
-          {tasks.length === 0 && (
-          <p className="text-center font-bold text-gray-600 text-2xl">¡NO HAY TAREAS!</p>
-          )}
-        </div>
-        </CardContent>
-        <AnimatePresence>
-        {showNotification && (
-          <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 50 }}
-          className="absolute flex items-centerjustify-center bottom-4 bg-yellow-400 text-blue-800 p-4 rounded-3xl shadow-lg"
-          >
-          <TrophyIcon className="h-6 w-6 mr-2" />
-          <p className="text-lg font-bold">¡Felicidades! Has completado una tarea.</p>
-          </motion.div>
-        )}
-        </AnimatePresence>
-      </Card>
-      <Card className="md:w-1/6 bg-white rounded-3xl shadow-lg flex">
-        <Button
-        onClick={() => router.push('/menu-calendario-agenda/calendario')}
-        className="w-full h-full flex flex-col items-center justify-center p-6 bg-green-500 hover:bg-green-600 text-white rounded-2xl text-center"
-        >
-        <Calendar className="w-5 h-5 mb-2" />
-        <h2 className="text-xl md:text-2xl font-bold text-center">CALENDARIO</h2>
-        </Button>
-      </Card>
-      </div>
-    </div>
-  )
-}
-*/

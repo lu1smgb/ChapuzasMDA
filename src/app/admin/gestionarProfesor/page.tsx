@@ -22,63 +22,74 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface Profesor {
-  identificador: number;
-  nombre: string;
-  imagen_perfil: string;
-  credencial: string;
-  aula: string;
+  identificador: number; // Identificador único del profesor.
+  nombre: string; // Nombre del profesor.
+  imagen_perfil: string; // URL de la imagen de perfil del profesor.
+  credencial: string; // Credencial o identificador adicional del profesor.
+  aula: string; // Aula asociada al profesor.
 }
 
 export default function TeacherList() {
-  const [teachers, setTeachers] = useState<Profesor[]>([])
-  const [filterName, setFilterName] = useState('')
-  const [filterAula, setFilterAula] = useState('')
-  const [deleteTeacher, setDeleteTeacher] = useState<Profesor | null>(null)
-  const router = useRouter()
+  // Estado que almacena la lista de profesores.
+  const [teachers, setTeachers] = useState<Profesor[]>([]);
+  // Estado para el filtro por nombre.
+  const [filterName, setFilterName] = useState('');
+  // Estado para el filtro por aula.
+  const [filterAula, setFilterAula] = useState('');
+  // Estado que almacena temporalmente al profesor que se desea eliminar.
+  const [deleteTeacher, setDeleteTeacher] = useState<Profesor | null>(null);
+  const router = useRouter(); // Hook para manejar la navegación.
 
+  // Efecto que carga los profesores al montar el componente.
   useEffect(() => {
-    fetchTeachers();
+    fetchTeachers(); // Llama a la función para obtener los datos.
   }, []);
 
+  // Obtiene la lista de profesores desde Supabase.
   const fetchTeachers = async () => {
     try {
+      // Realiza la consulta a la tabla 'Profesor' para obtener todos los registros.
       const { data, error } = await supabase
         .from("Profesor")
         .select("*");
 
-      if (error) throw error;
+      if (error) throw error; // Lanza error si ocurre algún problema en la consulta.
 
-      setTeachers(data as Profesor[]);
+      setTeachers(data as Profesor[]); // Guarda los datos obtenidos en el estado.
     } catch (error) {
-      console.error("Error al obtener los profesores:", error);
+      console.error("Error al obtener los profesores:", error); // Muestra el error en la consola.
     }
   };
 
+  // Almacena el profesor seleccionado para eliminar.
   const handleDeleteTeacher = async (teacher: Profesor) => {
-    setDeleteTeacher(teacher);
-  }
+    setDeleteTeacher(teacher); // Actualiza el estado con el profesor a eliminar.
+  };
 
+  // Confirma y realiza la eliminación del profesor seleccionado.
   const confirmDeleteTeacher = async () => {
-    if (deleteTeacher) {
+    if (deleteTeacher) { // Verifica si hay un profesor seleccionado.
       try {
+        // Elimina el profesor de la base de datos según su identificador.
         const { error } = await supabase
           .from('Profesor')
           .delete()
           .eq('identificador', deleteTeacher.identificador);
-        
-        if (error) throw error;
-        
-        fetchTeachers();
+
+        if (error) throw error; // Lanza error si ocurre algún problema durante la eliminación.
+
+        fetchTeachers(); // Actualiza la lista de profesores tras la eliminación.
       } catch (error) {
-        console.error("Error al eliminar el profesor:", error);
+        console.error("Error al eliminar el profesor:", error); // Muestra el error en la consola.
       }
     }
-    setDeleteTeacher(null);
-  }
+    setDeleteTeacher(null); // Limpia el estado del profesor seleccionado.
+  };
 
+  // Filtra la lista de profesores según los valores de los filtros.
   const filteredTeachers = teachers.filter(teacher => 
-    teacher.nombre.toLowerCase().includes(filterName.toLowerCase()) &&
-    teacher.aula.toLowerCase().includes(filterAula.toLowerCase())
+    teacher.nombre.toLowerCase().includes(filterName.toLowerCase()) && // Filtro por nombre.
+    teacher.aula.toLowerCase().includes(filterAula.toLowerCase()) // Filtro por aula.
   );
 
   return (

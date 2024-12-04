@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils, Paperclip } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { UserPlus, UserCog, UserMinus, BookOpen, ClipboardList, Send, Gamepad2, PartyPopper, Utensils, Paperclip, Image } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation';
 
@@ -51,10 +51,10 @@ export default function AdminDashboard() {
       color: 'bg-orange-500 hover:bg-orange-600'
     },
     { 
-      title: 'Asignar Tareas', 
-      description: 'Asignar tareas a alumnos', 
+      title: 'Responsables de Comedor y Material', 
+      description: 'Alumnos asignados a las tareas de menú y material de hoy',
       icon: Send, 
-      link: '/admin/asignar-tarea',
+      link: '/admin/observarAsignados',
       color: 'bg-amber-700 hover:bg-amber-800'
     },
     { 
@@ -63,6 +63,13 @@ export default function AdminDashboard() {
       icon: Utensils, 
       link: '/admin/gestionarMenu',
       color: 'bg-green-500 hover:bg-green-600'
+    },
+    { 
+      title: 'Administrar Imágenes Login', 
+      description: 'Gestionar las imágenes de la página de inicio de sesión', 
+      icon: Image, 
+      link: '/admin/gestionarImagenesLogin',
+      color: 'bg-green-800 hover:bg-green-900'
     },
   ]
 
@@ -92,18 +99,18 @@ export default function AdminDashboard() {
                 <Card 
                   className={`transition-all duration-300 ease-in-out transform hover:scale-105 ${
                     hoveredCard === item.title ? 'shadow-lg' : 'shadow'
-                  } ${item.color} text-white min-h-full flex flex-col`}
+                  } ${item.color} text-white h-full flex flex-col`}
                   onMouseEnter={() => setHoveredCard(item.title)}
                   onMouseLeave={() => setHoveredCard(null)}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-xl">
-                      <item.icon className="mr-2 h-6 w-6" />
+                  <CardHeader className="pb-2">
+                    <CardTitle className="flex items-center text-lg">
+                      <item.icon className="mr-2 h-5 w-5" />
                       {item.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-white/90">{item.description}</CardDescription>
+                    <CardDescription className="text-white/90 text-sm">{item.description}</CardDescription>
                   </CardContent>
                 </Card>
               </Link>
@@ -112,4 +119,8 @@ export default function AdminDashboard() {
         </div>
       </main>
     </div>
-  )}
+  )
+}
+
+
+

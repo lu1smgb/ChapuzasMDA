@@ -21,73 +21,81 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
+// Interface que define la estructura de un alumno en la aplicación.
 interface Alumno {
-  identificador: number;
-  nombre: string;
-  imagen_perfil: string;
-  credencial: string;
-  año_nacimiento: string;
-  aula: string;
-  tipo_login: string;
-  IU_Audio: boolean;
-  IU_Video: boolean;
-  IU_Imagen: boolean;
-  IU_Pictograma: boolean;
-  IU_Texto: boolean;
-  numero_pasos: number;
+  identificador: number; // Identificador único del alumno
+  nombre: string; // Nombre del alumno
+  imagen_perfil: string; // URL de la imagen de perfil
+  credencial: string; // Credencial del alumno
+  año_nacimiento: string; // Año de nacimiento
+  aula: string; // Aula asignada al alumno
+  tipo_login: string; // Tipo de inicio de sesión (PIN, contraseña, etc.)
+  IU_Audio: boolean; // Indica si se usa interfaz de usuario con audio
+  IU_Video: boolean; // Indica si se usa interfaz de usuario con video
+  IU_Imagen: boolean; // Indica si se usa interfaz de usuario con imágenes
+  IU_Pictograma: boolean; // Indica si se usa interfaz de usuario con pictogramas
+  IU_Texto: boolean; // Indica si se usa interfaz de usuario con texto
+  numero_pasos: number; // Número de pasos asociados al alumno
 }
 
+// Componente principal para la lista de alumnos.
 export default function StudentList() {
-  const [students, setStudents] = useState<Alumno[]>([])
-  const [filterName, setFilterName] = useState('')
-  const [filterAula, setFilterAula] = useState('')
-  const [deleteStudent, setDeleteStudent] = useState<Alumno | null>(null)
-  const router = useRouter()
+  const [students, setStudents] = useState<Alumno[]>([]); // Lista de alumnos
+  const [filterName, setFilterName] = useState(''); // Filtro por nombre
+  const [filterAula, setFilterAula] = useState(''); // Filtro por aula
+  const [deleteStudent, setDeleteStudent] = useState<Alumno | null>(null); // Almacena el alumno a eliminar
+  const router = useRouter(); // Manejo de rutas
 
+  // Hook de efecto para cargar los alumnos al montar el componente.
   useEffect(() => {
     fetchStudents();
   }, []);
 
+  // Función para obtener los alumnos de la base de datos.
   const fetchStudents = async () => {
     try {
       const { data, error } = await supabase
-        .from("Alumno")
-        .select("*");
+        .from("Alumno") // Consulta a la tabla "Alumno"
+        .select("*"); // Selecciona todos los campos
 
       if (error) throw error;
 
-      setStudents(data as Alumno[]);
+      setStudents(data as Alumno[]); // Almacena los datos en el estado
     } catch (error) {
       console.error("Error al obtener los alumnos:", error);
     }
   };
 
+  // Función para seleccionar un alumno para eliminar.
   const handleDeleteStudent = async (student: Alumno) => {
-    setDeleteStudent(student);
-  }
+    setDeleteStudent(student); // Establece el alumno a eliminar
+  };
 
+  // Función para confirmar y eliminar un alumno de la base de datos.
   const confirmDeleteStudent = async () => {
-    if (deleteStudent) {
+    if (deleteStudent) { // Verifica si hay un alumno seleccionado
       try {
         const { error } = await supabase
-          .from('Alumno')
+          .from('Alumno') // Elimina de la tabla "Alumno"
           .delete()
-          .eq('identificador', deleteStudent.identificador);
+          .eq('identificador', deleteStudent.identificador); // Condición: identificador del alumno
         
         if (error) throw error;
-        
-        fetchStudents();
+
+        fetchStudents(); // Actualiza la lista de alumnos
       } catch (error) {
         console.error("Error al eliminar el alumno:", error);
       }
     }
-    setDeleteStudent(null);
-  }
+    setDeleteStudent(null); // Resetea el estado del alumno a eliminar
+  };
 
+  // Filtra los alumnos según el nombre y el aula.
   const filteredStudents = students.filter(student => 
-    student.nombre.toLowerCase().includes(filterName.toLowerCase()) &&
-    student.aula.toLowerCase().includes(filterAula.toLowerCase())
+    student.nombre.toLowerCase().includes(filterName.toLowerCase()) && // Coincidencia de nombre
+    student.aula.toLowerCase().includes(filterAula.toLowerCase()) // Coincidencia de aula
   );
+
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full max-w-4xl mx-auto">

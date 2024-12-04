@@ -22,60 +22,67 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface Menu {
-  id: number;
-  nombre: string;
-  url_imagen: string;
+  id: number;             // Identificador único del menú.
+  nombre: string;         // Nombre del menú.
+  url_imagen: string;     // URL de la imagen asociada al menú.
 }
 
 export default function MenuList() {
-  const [menus, setMenus] = useState<Menu[]>([])
-  const [filterName, setFilterName] = useState('')
-  const [deleteMenu, setDeleteMenu] = useState<Menu | null>(null)
-  const router = useRouter()
+  // Estados del componente
+  const [menus, setMenus] = useState<Menu[]>([]); // Almacena la lista de menús obtenidos.
+  const [filterName, setFilterName] = useState(''); // Cadena de texto para filtrar menús por nombre.
+  const [deleteMenu, setDeleteMenu] = useState<Menu | null>(null); // Menú seleccionado para eliminar.
+  const router = useRouter(); // Permite la navegación entre páginas.
 
+  // Efecto que se ejecuta al cargar el componente para obtener la lista inicial de menús.
   useEffect(() => {
-    fetchMenus();
+    fetchMenus(); // Llama a la función que obtiene los menús de la base de datos.
   }, []);
 
+  // Función para obtener la lista de menús desde Supabase.
   const fetchMenus = async () => {
     try {
       const { data, error } = await supabase
-        .from("Menu")
-        .select("*");
+        .from("Menu") // Selecciona la tabla "Menu".
+        .select("*"); // Obtiene todos los registros de la tabla.
 
-      if (error) throw error;
+      if (error) throw error; // Si ocurre un error, lo lanza para ser capturado.
 
-      setMenus(data as Menu[]);
+      setMenus(data as Menu[]); // Actualiza el estado con la lista de menús obtenida.
     } catch (error) {
-      console.error("Error al obtener los menús:", error);
+      console.error("Error al obtener los menús:", error); // Muestra el error en consola.
     }
   };
 
+  // Función que establece el menú a eliminar.
   const handleDeleteMenu = async (menu: Menu) => {
-    setDeleteMenu(menu);
-  }
+    setDeleteMenu(menu); // Guarda el menú seleccionado en el estado.
+  };
 
+  // Función que confirma y elimina el menú seleccionado.
   const confirmDeleteMenu = async () => {
-    if (deleteMenu) {
+    if (deleteMenu) { // Solo procede si hay un menú seleccionado para eliminar.
       try {
         const { error } = await supabase
-          .from('Menu')
-          .delete()
-          .eq('id', deleteMenu.id);
-        
-        if (error) throw error;
-        
-        fetchMenus();
+          .from('Menu') // Selecciona la tabla "Menu".
+          .delete()     // Ejecuta la operación de borrado.
+          .eq('id', deleteMenu.id); // Filtra por el identificador del menú seleccionado.
+
+        if (error) throw error; // Si ocurre un error, lo lanza para ser capturado.
+
+        fetchMenus(); // Actualiza la lista de menús después de eliminar.
       } catch (error) {
-        console.error("Error al eliminar el menú:", error);
+        console.error("Error al eliminar el menú:", error); // Muestra el error en consola.
       }
     }
-    setDeleteMenu(null);
-  }
+    setDeleteMenu(null); // Limpia el estado del menú seleccionado.
+  };
 
+  // Filtro para buscar menús por nombre.
   const filteredMenus = menus.filter(menu => 
-    menu.nombre.toLowerCase().includes(filterName.toLowerCase())
+    menu.nombre.toLowerCase().includes(filterName.toLowerCase()) // Filtra los menús cuyo nombre incluye el texto de búsqueda, ignorando mayúsculas/minúsculas.
   );
+
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full max-w-4xl mx-auto">
