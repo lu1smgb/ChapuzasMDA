@@ -20,74 +20,80 @@ import {
 } from "@/components/ui/alert-dialog"
 
 export default function GestionarImagenesLogin() {
-  const [images, setImages] = useState<string[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [deleteImage, setDeleteImage] = useState<string | null>(null)
-  const supabase = createClientComponentClient()
-  const router = useRouter()
+  // Estados del componente
+  const [images, setImages] = useState<string[]>([]); // Lista de nombres de imágenes almacenadas.
+  const [isLoading, setIsLoading] = useState(true); // Indica si hay una operación en proceso.
+  const [error, setError] = useState<string | null>(null); // Mensaje de error, si ocurre.
+  const [deleteImage, setDeleteImage] = useState<string | null>(null); // Imagen seleccionada para eliminar.
+  const supabase = createClientComponentClient(); // Cliente de Supabase para manejar la base de datos y almacenamiento.
+  const router = useRouter(); // Para redirección o navegación si es necesario.
 
+  // Se ejecuta una vez al cargar el componente para obtener las imágenes existentes.
   useEffect(() => {
-    fetchImages()
-  }, [])
+    fetchImages(); // Llama a la función para cargar imágenes.
+  }, []);
 
+  // Función para obtener la lista de imágenes almacenadas en el bucket de Supabase.
   async function fetchImages() {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true); // Activa el indicador de carga.
+    setError(null); // Limpia cualquier error previo.
+
     const { data, error } = await supabase
       .storage
-      .from('ImagenesPrueba')
-      .list('login_alumno')
+      .from('ImagenesPrueba') // Selecciona el bucket "ImagenesPrueba".
+      .list('login_alumno'); // Lista los archivos en la carpeta "login_alumno".
 
     if (error) {
-      setError('Error al cargar las imágenes')
-      console.error(error)
+      setError('Error al cargar las imágenes'); // Establece el mensaje de error.
+      console.error(error); // Muestra el error en consola.
     } else {
-      setImages(data.map(file => file.name))
+      setImages(data.map(file => file.name)); // Actualiza el estado con los nombres de las imágenes.
     }
-    setIsLoading(false)
+    setIsLoading(false); // Finaliza el estado de carga.
   }
 
+  // Función para subir una nueva imagen al bucket.
   async function uploadImage(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
+    const file = event.target.files?.[0]; // Obtiene el archivo seleccionado.
+    if (!file) return; // Sale si no hay archivo.
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true); // Activa el indicador de carga.
+    setError(null); // Limpia cualquier error previo.
 
     const { error } = await supabase
       .storage
-      .from('ImagenesPrueba')
-      .upload(`login_alumno/${file.name}`, file)
+      .from('ImagenesPrueba') // Selecciona el bucket "ImagenesPrueba".
+      .upload(`login_alumno/${file.name}`, file); // Sube el archivo a la carpeta "login_alumno".
 
     if (error) {
-      setError('Error al subir la imagen')
-      console.error(error)
+      setError('Error al subir la imagen'); // Establece el mensaje de error.
+      console.error(error); // Muestra el error en consola.
     } else {
-      fetchImages()
+      fetchImages(); // Actualiza la lista de imágenes.
     }
-    setIsLoading(false)
+    setIsLoading(false); // Finaliza el estado de carga.
   }
 
+  // Función para eliminar la imagen seleccionada del bucket.
   async function confirmDeleteImage() {
-    if (deleteImage) {
-      setIsLoading(true)
-      setError(null)
+    if (deleteImage) { // Solo procede si hay una imagen seleccionada.
+      setIsLoading(true); // Activa el indicador de carga.
+      setError(null); // Limpia cualquier error previo.
 
       const { error } = await supabase
         .storage
-        .from('ImagenesPrueba')
-        .remove([`login_alumno/${deleteImage}`])
+        .from('ImagenesPrueba') // Selecciona el bucket "ImagenesPrueba".
+        .remove([`login_alumno/${deleteImage}`]); // Elimina la imagen seleccionada.
 
       if (error) {
-        setError('Error al eliminar la imagen')
-        console.error(error)
+        setError('Error al eliminar la imagen'); // Establece el mensaje de error.
+        console.error(error); // Muestra el error en consola.
       } else {
-        fetchImages()
+        fetchImages(); // Actualiza la lista de imágenes.
       }
-      setIsLoading(false)
+      setIsLoading(false); // Finaliza el estado de carga.
     }
-    setDeleteImage(null)
+    setDeleteImage(null); // Limpia la selección de imagen a eliminar.
   }
 
   return (
