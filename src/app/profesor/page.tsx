@@ -124,7 +124,10 @@ export default function Profesor() {
                           <img src={alumno.imagen_perfil} alt={alumno.nombre} className="w-10 h-10 rounded-full" />
                           <span className="text-lg">{alumno.nombre}</span>
                         </div>
-                        <Button variant="outline" className="bg-yellow-500 hover:bg-yellow-600 text-white border-none">
+                        <Button 
+                          onClick={() => router.push(`/admin/gestionarAlumno/seguimiento-alum?id=${alumno.identificador}`)}
+                          variant="outline" 
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white border-none">
                           <Eye className="mr-2 h-4 w-4" /> Ver seguimiento
                         </Button>
                       </li>
@@ -133,7 +136,7 @@ export default function Profesor() {
                 </ScrollArea>
               </CardContent>
             </Card>
-            
+
             <Card className="w-full">
               <CardContent className="flex items-center justify-center py-8">
                 <Button size="lg" className="text-xl px-8 py-6 bg-purple-600">

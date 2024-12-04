@@ -171,9 +171,25 @@ interface Task {
   return (
     <div className="bg-white rounded-lg shadow-lg p-4 md:p-8 w-full max-w-6xl mx-auto flex flex-col h-screen">
       <nav className="mb-4">
-        <Button onClick={() => router.push('.')} variant="outline" className="text-base bg-yellow-400 hover:bg-yellow-500">
+        <Button 
+          onClick={() => {
+            // Si es profesor, llevara al dashboard de profesor
+            if (localStorage.getItem('profName')) {
+              router.push('/profesor')
+            }
+            // Si es administrador, llevara a la lista de alumnos
+            else if (localStorage.getItem('adminName')) {
+              router.push('.')
+            }
+            // Por defecto, llevara al login
+            else {
+              router.push('/')
+            }
+          }} 
+          variant="outline" 
+          className="text-base bg-yellow-400 hover:bg-yellow-500">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Volver al listado de alumnos
+            {localStorage.getItem('profName') && `Volver` || localStorage.getItem('adminName') && `Volver al listado de alumnos`}
         </Button>
       </nav>
 
