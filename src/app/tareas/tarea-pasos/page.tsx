@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react'
 import { createClient } from '@supabase/supabase-js'
 import confetti from 'canvas-confetti'
 
@@ -46,6 +46,7 @@ export default function TareaPasos() {
   const [currentStep, setCurrentStep] = useState(0)
   const [error, setError] = useState<string | null>(null)
   const [showCompletionPage, setShowCompletionPage] = useState(false)
+  const [currentMediaIndex, setCurrentMediaIndex] = useState<{ [key: number]: number }>({})
   const router = useRouter()
 
   useEffect(() => {
@@ -102,21 +103,22 @@ export default function TareaPasos() {
       setError('Error al cargar los pasos de la tarea')
     } else if (data) {
       setPasos(data)
+      const initialMediaIndex = data.reduce((acc, _, index) => {
+        acc[index] = 0
+        return acc
+      }, {} as { [key: number]: number })
+      setCurrentMediaIndex(initialMediaIndex)
     }
   }
 
-
   const nextStep = () => {
     if (alumno && currentStep < Math.ceil(pasos.length / alumno.numero_pasos) - 1) {
-      // Si hay más pasos disponibles, avanza al siguiente paso.
       setCurrentStep(currentStep + 1);
     } else if (
       alumno &&
       currentStep === Math.ceil(pasos.length / alumno.numero_pasos) - 1 &&
       pasos.length <= (currentStep + 1) * alumno.numero_pasos
     ) {
-      // Si estamos en el último conjunto de pasos y no hay más pasos por mostrar,
-      // muestra la página de finalización.
       setShowCompletionPage(true);
     }
   };
@@ -127,6 +129,24 @@ export default function TareaPasos() {
     }
   }
 
+  const nextMedia = (pasoIndex: number) => {
+    setCurrentMediaIndex(prev => ({
+      ...prev,
+      [pasoIndex]: (prev[pasoIndex] + 1) % getMediaCount(pasos[pasoIndex])
+    }))
+  }
+
+  const prevMedia = (pasoIndex: number) => {
+    setCurrentMediaIndex(prev => ({
+      ...prev,
+      [pasoIndex]: (prev[pasoIndex] - 1 + getMediaCount(pasos[pasoIndex])) % getMediaCount(pasos[pasoIndex])
+    }))
+  }
+
+  const getMediaCount = (paso: Paso) => {
+    return [paso.texto, paso.audio, paso.imagen, paso.video, paso.pictograma].filter(Boolean).length
+  }
+
   const renderPasoContent = () => {
     if (!alumno || pasos.length === 0) return null
 
@@ -134,33 +154,57 @@ export default function TareaPasos() {
     const endIndex = Math.min(startIndex + alumno.numero_pasos, pasos.length)
     const currentPasos = pasos.slice(startIndex, endIndex)
 
+    const gridCols = alumno.numero_pasos <= 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'
+    const cardHeight = `h-[${Math.floor(100 / Math.ceil(alumno.numero_pasos / 3))}vh]`
+
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full">
-        {currentPasos.map((paso, index) => (
-          <div key={paso.identificador} className="flex flex-col justify-center">
-            {alumno.IU_Texto && paso.texto && (
-              <p className="text-3xl mb-6">{paso.texto}</p>
-            )}
-            {alumno.IU_Audio && paso.audio && (
-              <audio controls className="w-full mb-6">
-                <source src={paso.audio} type="audio/mpeg" />
-                Tu navegador no soporta el elemento de audio.
-              </audio>
-            )}
-            {alumno.IU_Pictograma && paso.pictograma && (
-              <img src={paso.pictograma} alt={`Pictograma del paso ${startIndex + index + 1}`} className="w-full h-auto object-contain mb-6 rounded-lg" />
-            )}
-            {alumno.IU_Imagen && paso.imagen && (
-              <img src={paso.imagen} alt={`Paso ${startIndex + index + 1}`} className="w-full h-auto object-contain mb-6 rounded-lg" />
-            )}
-            {alumno.IU_Video && paso.video && (
-              <video controls className="w-full h-auto object-contain rounded-lg mb-6">
-                <source src={paso.video} type="video/mp4" />
-                Tu navegador no soporta el elemento de video.
-              </video>
-            )}
-          </div>
-        ))}
+      <div className={`grid grid-cols-1 ${gridCols} gap-4 h-full`}>
+        {currentPasos.map((paso, index) => {
+          const pasoIndex = startIndex + index
+          const currentMedia = currentMediaIndex[pasoIndex] || 0
+          const mediaCount = getMediaCount(paso)
+
+          return (
+            <Card key={paso.identificador} className={`font-escolar flex flex-col justify-between p-4 bg-white shadow-lg rounded-lg ${cardHeight}`}>
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-center">Paso Nº {pasoIndex + 1}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow flex flex-col justify-center items-center">
+                {alumno.IU_Texto && paso.texto && currentMedia === 0 && (
+                  <p className="text-xl mb-4">{paso.texto}</p>
+                )}
+                {alumno.IU_Audio && paso.audio && currentMedia === (alumno.IU_Texto ? 1 : 0) && (
+                  <audio controls className="w-full mb-4">
+                    <source src={paso.audio} type="audio/mpeg" />
+                    Tu navegador no soporta el elemento de audio.
+                  </audio>
+                )}
+                {alumno.IU_Pictograma && paso.pictograma && currentMedia === (alumno.IU_Texto && alumno.IU_Audio ? 2 : alumno.IU_Texto || alumno.IU_Audio ? 1 : 0) && (
+                  <img src={paso.pictograma} alt={`Pictograma del paso ${pasoIndex + 1}`} className="w-full h-auto object-contain mb-4 rounded-lg" />
+                )}
+                {alumno.IU_Imagen && paso.imagen && currentMedia === (alumno.IU_Texto && alumno.IU_Audio && alumno.IU_Pictograma ? 3 : alumno.IU_Texto && alumno.IU_Audio || alumno.IU_Texto && alumno.IU_Pictograma || alumno.IU_Audio && alumno.IU_Pictograma ? 2 : alumno.IU_Texto || alumno.IU_Audio || alumno.IU_Pictograma ? 1 : 0) && (
+                  <img src={paso.imagen} alt={`Paso ${pasoIndex + 1}`} className="w-full h-auto object-contain mb-4 rounded-lg" />
+                )}
+                {alumno.IU_Video && paso.video && currentMedia === mediaCount - 1 && (
+                  <video controls className="w-full h-auto object-contain rounded-lg mb-4">
+                    <source src={paso.video} type="video/mp4" />
+                    Tu navegador no soporta el elemento de video.
+                  </video>
+                )}
+              </CardContent>
+              {mediaCount > 1 && (
+                <div className="flex justify-between mt-4">
+                  <Button onClick={() => prevMedia(pasoIndex)} className="bg-blue-500 hover:bg-blue-600 text-white">
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button onClick={() => nextMedia(pasoIndex)} className="bg-blue-500 hover:bg-blue-600 text-white">
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )
+        })}
       </div>
     )
   }
@@ -201,14 +245,14 @@ export default function TareaPasos() {
           onClick={handleCompletion}
           className="bg-green-500 hover:bg-green-600 text-white text-6xl py-24 px-12 rounded-3xl"
         >
-          ¡Has completado la tarea!
+          ¡Toca aquí para terminar la tarea!
         </Button>
       </div>
     )
   }
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4">
+    <div className="font-escolar h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 flex flex-col p-4">
       <Button 
         onClick={() => router.push('/menu-calendario-agenda')} 
         className="self-start mb-4 bg-yellow-400 hover:bg-yellow-500 text-gray-800 text-2xl py-3 px-6"
@@ -233,7 +277,7 @@ export default function TareaPasos() {
             {renderPasoContent()}
             <div className="mt-4 text-center">
               <span className="text-3xl font-bold">
-                Paso {currentStep + 1} de {Math.ceil(pasos.length / alumno.numero_pasos)}
+                Página {currentStep + 1} de {Math.ceil(pasos.length / alumno.numero_pasos)}
               </span>
             </div>
           </CardContent>
@@ -245,7 +289,6 @@ export default function TareaPasos() {
         >
           <ArrowRight className="h-20 w-20" />
         </Button>
-
       </main>
     </div>
   )
