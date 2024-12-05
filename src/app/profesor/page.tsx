@@ -139,7 +139,10 @@ export default function Profesor() {
 
             <Card className="w-full">
               <CardContent className="flex items-center justify-center py-8">
-                <Button size="lg" className="text-xl px-8 py-6 bg-purple-600">
+                <Button 
+                  onClick={() => router.push('/profesor/solicitud-material')}
+                  size="lg" 
+                  className="text-xl px-8 py-6 bg-purple-600">
                   Solicitar material
                 </Button>
               </CardContent>
