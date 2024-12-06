@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import confetti from 'canvas-confetti'
 import { NotificationModal } from '@/components/ui/NotificationModal'
 
+// Interface para definir la estructura de una tarea.
 type Material = {
   id: number
   nombre: string
@@ -19,10 +20,6 @@ type Material = {
   id_profesor: number
 }
 
-type Profesor = {
-    id: number;
-    imagen: string;
-  };
 
 export default function MaterialesParaClase() {
   const router = useRouter()
@@ -38,16 +35,18 @@ export default function MaterialesParaClase() {
     fetchMaterials();
   }, []);
 
+
+// Función para obtener los materiales del alumno desde múltiples tablas.
   const fetchMaterials = async () => {
     
-    const taskId = localStorage.getItem('tareaId');
+    const taskId = localStorage.getItem('tareaId'); // Obtener el identificador de la tarea del alumno
     
-    if (!taskId) {
+    if (!taskId) { // Si no se encuentra el identificador de la tarea del alumno, mostrar un error.
       console.error('No se encontró el identificador del alumno.');
       return;
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabase // Obtener los materiales del alumno desde la tabla Tarea_Material
       .from('Tarea_Material')
       .select("identificador, nombres_materiales, cantidades_materiales, aula_destino, id_profesor")
       .eq('identificador', taskId)
@@ -58,7 +57,7 @@ export default function MaterialesParaClase() {
       return;
     }
 
-    if (data) {
+    if (data) { // Si se obtienen los materiales del alumno, crear una estructura de datos para cada uno de ellos.
         const nombres = data.nombres_materiales.split(',').map((nombre: string) => nombre.trim());
         const cantidades = data.cantidades_materiales.split(',').map((cantidad: string) => parseInt(cantidad.trim(), 10));
         const materials: Material[] = nombres.map((nombre: string, index: number) => ({
@@ -75,7 +74,7 @@ export default function MaterialesParaClase() {
     }
   };
 
-  const fetchProfesorImagen = async (id_profesor: number) => {
+  const fetchProfesorImagen = async (id_profesor: number) => { // Función para obtener la imagen del profesor del alumno
     const { data, error } = await supabase
       .from('Profesor')
       .select("imagen_perfil")
@@ -92,15 +91,16 @@ export default function MaterialesParaClase() {
     }
   };
 
-  const toggleItem = (id: number) => {
+  const toggleItem = (id: number) => { // Función para marcar un material como recogido o no recogido
     setItems(items.map(item => 
       item.id === id ? { ...item, recogido: !item.recogido } : item
     ))
   }
 
-  const handleCompletar = async () => {
+  const handleCompletar = async () => { // Función para marcar la tarea como completada
     if (items.every(item => item.recogido)) {
 
+        // Obtener el identificador de la tarea del alumno
         const taskId = localStorage.getItem('tareaId');
 
         if (!taskId) {
@@ -108,7 +108,7 @@ export default function MaterialesParaClase() {
             return;
         }
         
-        const { error } = await supabase
+        const { error } = await supabase // Actualizar la tarea en la tabla Tarea_Material
             .from('Tarea_Material')
                 .update({ completada: true })
                 .eq('identificador', taskId)
@@ -116,7 +116,7 @@ export default function MaterialesParaClase() {
         if (error) {
             console.error('Error updating tarea:', error)
             setError('Error al marcar la tarea como completada')
-        } else {
+        } else { // Si no se producen errores, mostrar un efecto de animación y redireccionar al siguiente paso de la tarea
             confetti({
                 particleCount: 100,
                 spread: 70,
@@ -126,11 +126,12 @@ export default function MaterialesParaClase() {
             setShowSuccessModal(true)
             setTimeout(() => router.push('/menu-calendario-agenda'), 6000)
         }
-    } else {
+    } else { // Si no se marcan todos los materiales como recogidos, mostrar una notificación de advertencia
         setShowWarningModal(true)
     }
   }
 
+  // Objeto para almacenar las imagenes de los materiales
   const cantidadImagenes: { [key: number]: string } = {
     1: '/images/comedor/1.png',
     2: '/images/comedor/2.png',
@@ -144,6 +145,7 @@ export default function MaterialesParaClase() {
     10: '/images/comedor/10.png'
   }
 
+// Componente principal para los materiales para clase
 return (
     <div className="font-escolar min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4 flex flex-col">
         <Button
@@ -172,7 +174,7 @@ return (
                             className={`p-4 rounded-xl flex items-center justify-between cursor-pointer ${item.recogido ? 'bg-purple-200': 'bg-purple-400'} md:flex-row md:items-center`}
                             onClick={() => toggleItem(item.id)}
                             whileHover={{ scale: 1.05 }}
-                            style={{ height: '100px' }} // Ensure all items have the same height
+                            style={{ height: '100px' }}
                         >
                             <Checkbox
                                 checked={item.recogido}

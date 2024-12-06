@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { supabase } from "@/lib/supabase";
-import { motion } from 'framer-motion';
-import { start } from 'repl'
 
-
+// Interface para definir la estructura de una tarea.
 type Task = {
   id: number,
   nombre_tarea: string,
@@ -20,6 +18,7 @@ type Task = {
   imagen: string
 };
 
+// Componente principal para el calendario de actividades
 export default function Calendario() {
   const router = useRouter()
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -38,6 +37,7 @@ export default function Calendario() {
       return [];
     }
 
+      // Obtener las tareas del alumno desde la tabla nombre_tabla
     const { data, error } = await supabase
       .from(nombre_tabla)
       .select("identificador, fecha_inicio, fecha_fin, completada, id_alumno, nombre, descripcion, imagen_tarea") // Seleccionar los campos necesarios
@@ -47,7 +47,7 @@ export default function Calendario() {
     if (error) {
       console.error('Error fetching tasks:', error);
       return [];
-    } else {
+    } else { // Si se obtienen las tareas del alumno, crear una estructura de datos para cada una de ellas.
       return data.map((task: any) => ({
         id: task.identificador,
         nombre_tarea: task.nombre,
@@ -61,6 +61,7 @@ export default function Calendario() {
     }
   };
 
+  // Función para generar un rango de fechas entre dos fechas
   const generateDateRange = (startDate: string, endDate: string) => {
     const dates = [];
     let currentDate = new Date(startDate);
@@ -74,12 +75,14 @@ export default function Calendario() {
     return dates;
   };
 
+  // Función para obtener todas las tareas del alumno
   const fetchAllTasks = async () => {
     const taskTables = ['Tarea_Juego', 'Tarea_Material', 'Tarea_Menu', 'Tarea_Pasos'];
     const allTasks = await Promise.all(taskTables.map(fetchTasks));
     setTasks(allTasks.flat().filter((task): task is Task => task !== undefined));
   };
 
+  // Función para agrupar las tareas por fecha
   const groupTasksByDate = (tasks: Task[]) => {
     const groupedTasks: { [key: string]: Task[] } = {};
 
@@ -95,15 +98,15 @@ export default function Calendario() {
 
     // Ordenar las tareas dentro de cada fecha
     Object.keys(groupedTasks).forEach(date => {
-      groupedTasks[date].sort((a, b) => Number(a.completada) - Number(b.completada));
+      groupedTasks[date].sort((a, b) => Number(a.completada) - Number(b.completada)); // Ordenar las tareas por completada
     });
 
     return groupedTasks;
   };
 
-  const groupedTasks = groupTasksByDate(tasks); 
+  const groupedTasks = groupTasksByDate(tasks); // Agrupar las tareas por fecha
 
-
+// Funciones para cambiar de página en el calendario
   const nextPage = () => {
       setCurrentPage(currentPage + 1)
     
@@ -123,14 +126,14 @@ export default function Calendario() {
     'domingo': '/images/domingo.png',
   };
 
-  const defaultImages = {
+  const defaultImages = { // Imágenes por defecto para las tareas
     'Tarea_Juego': '/images/videojuego.png',
     'Tarea_Material': '/images/materialescolar.png',
     'Tarea_Menu': '/images/menu.png',
     'Tarea_Pasos': '/images/instrucciones.png',
   }
 
-
+// Componente principal para el calendario de actividades
   return (
     <div className="font-escolar min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4">
       <Button

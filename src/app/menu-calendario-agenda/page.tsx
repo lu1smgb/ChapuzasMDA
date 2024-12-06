@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { supabase } from "@/lib/supabase"
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Interface para definir la estructura de una tarea.
 type Task = {
   id: number
   nombre_tarea: string
@@ -18,7 +19,7 @@ type Task = {
   imagen?:string
 }
 
-
+// Objeto para almacenar las imagenes de las tareas por defecto
 const defaultImages = {
   'Tarea_Juego': '/images/videojuego.png',
   'Tarea_Material': '/images/materialescolar.png',
@@ -26,6 +27,7 @@ const defaultImages = {
   'Tarea_Pasos': '/images/instrucciones.png',
 }
 
+// Componente principal para la agenda del alumno
 export default function StudentAgenda() {
   const router = useRouter()
   const [tasks, setTasks] = useState<Task[]>([])
@@ -35,23 +37,19 @@ export default function StudentAgenda() {
     fetchAllTasks()
   }, [])
 
-
+// Función para obtener las tareas de una tabla específica
   const fetchTasks = async (nombre_tabla: string) => {
 
     const userId = localStorage.getItem('userId') // Recuperar el identificador del alumno del localStorage
 
     
-    if (!userId) {
+    if (!userId) { // Si no se encuentra el identificador del alumno, mostrar un error.
       console.error('No se encontró el identificador del alumno.')
       return
     }
 
-    const today = new Date().toISOString().split('T')[0]
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(23, 59, 59, 999);
-
-    const { data, error } = await supabase
+    
+    const { data, error } = await supabase // Obtener las tareas del alumno desde la tabla nombre_tabla
       .from(nombre_tabla)
       .select("identificador, fecha_inicio, fecha_fin, nombre, id_alumno, completada, imagen_tarea") // Seleccionar los campos necesarios
       .eq('completada', false)
@@ -60,7 +58,7 @@ export default function StudentAgenda() {
 
     if (error) {
       console.error('Error fetching tasks:', error)
-    } else if(data) {
+    } else if(data) { // Si se obtienen las tareas del alumno, crear una estructura de datos para cada una de ellas.
       return data.map((task: any): Task => ({
         id: task.identificador,
         nombre_tarea: task.nombre,
@@ -74,12 +72,13 @@ export default function StudentAgenda() {
     }
   }
 
-  const fetchAllTasks = async () => {
+  const fetchAllTasks = async () => { // Función para obtener todas las tareas del alumno
     const taskTables = ['Tarea_Juego', 'Tarea_Material', 'Tarea_Menu', 'Tarea_Pasos'];
     const allTasks = await Promise.all(taskTables.map(fetchTasks));
     setTasks(allTasks.flat().filter((task): task is Task => task !== undefined) as Task[]);
   };
 
+  // Función para verificar si la fecha actual está dentro del rango de fechas de inicio y fin de la tarea
   const isTodayInRange = (startDate: string, endDate: string) => {
     const today = new Date();
     const start = new Date(startDate);
@@ -87,6 +86,7 @@ export default function StudentAgenda() {
     return today >= start && today <= end;
   };
   
+  // Función para filtrar las tareas que se deben mostrar para la fecha actual
   const tasksForToday = tasks.filter(task => !task.completada && isTodayInRange(task.fecha_inicio, task.fecha_fin));
 
   
@@ -104,7 +104,7 @@ export default function StudentAgenda() {
     }
   };
 
-
+// Función para manejar el clic en una tarea
   const handleTaskClick = async (task: Task) => {
     localStorage.setItem('tareaId', task.id.toString());
     console.log(task.id);
@@ -137,6 +137,7 @@ export default function StudentAgenda() {
       }
   }
 
+  // Componente principal para la agenda del alumno
   return (
     <div className="font-escolar min-h-screen bg-gradient-to-b from-blue-200 to-green-200 p-4 flex flex-col">
       <div className="flex justify-end mb-10">
@@ -169,7 +170,7 @@ export default function StudentAgenda() {
                       className="rounded-lg"
                     />
                   </div>
-                  <h3 className="text-3xl font-semibold text-purple-900">{task.nombre_tarea}</h3>
+                  <h3 className="text-5xl font-semibold text-purple-900">{task.nombre_tarea}</h3>
                 </motion.div>
               ))}
               {tasksForToday.length === 0 && (
