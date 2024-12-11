@@ -101,7 +101,6 @@ export default function FormularioTarea() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      tipo_tarea: 'Tarea_Material',
       fecha_inicio: new Date().toISOString().slice(0, 16), // Establece la fecha y hora actual
       fecha_fin: '',
       nombre: '',
