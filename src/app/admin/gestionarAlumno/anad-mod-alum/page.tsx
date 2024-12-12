@@ -227,14 +227,28 @@ export default function StudentForm() {
         imagenes_login: interfaceLoginImages.map(img => img.name).join(',')
       };
 
-      const { error: upsertError } = await supabase
-        .from('Alumno')
-        .upsert(studentData);
+      let operation;
+      if (student) {
+        // If we're editing an existing student, use update
+        operation = supabase
+          .from('Alumno')
+          .update(studentData)
+          .eq('identificador', student.identificador);
+      } else {
+        // If we're creating a new student, use insert
+        operation = supabase
+          .from('Alumno')
+          .insert(studentData);
+      }
+
+      const { error: upsertError } = await operation;
 
       if (upsertError) throw upsertError;
 
-      setSuccess('Alumno guardado exitosamente.');
-      router.push('.');
+      setSuccess(student ? 'Alumno modificado exitosamente.' : 'Alumno añadido exitosamente.');
+      setTimeout(() => {
+        router.push('.');
+      }, 2000);
     } catch (error) {
       console.error("Error al guardar el alumno:", error);
       setError('Error al guardar el alumno. Inténtelo nuevamente.');
@@ -499,7 +513,4 @@ export default function StudentForm() {
     </div>
   )
 }
-
-
-
 
